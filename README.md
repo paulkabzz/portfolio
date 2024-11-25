@@ -2,6 +2,10 @@
 
 Welcome to my personal portfolio website! This project showcases my skills, projects, and professional journey as a computer science student and aspiring software engineer.
 
+🌐 [Visit My Portfolio](https://paulkabzz.github.io/portfolio/) and feel free to connect or provide feedback!
+
+---
+
 ## 🚀 Features
 
 - **About Me**: Learn more about my background, interests, and aspirations.
@@ -47,7 +51,3 @@ Feel free to reach out to me:
 - Adding animations and interactivity for a dynamic user experience
 - Integrating a blog section to share my insights on tech trends
 - Enhancing the portfolio with a backend for dynamic project updates
-
----
-
-🌐 [Visit My Portfolio]([https://github.com/paulkabzz/portfolio](https://paulkabzz.github.io/portfolio/)) and feel free to connect or provide feedback!

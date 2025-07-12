@@ -1,5 +1,7 @@
 import Button from "../common/buttons/button";
 import styles from './index.module.css';
+import Github from '../../assets/github.png';
+import Linkedin from '../../assets/linkedin.png';
 
 interface IHero {
     name: string;
@@ -28,6 +30,14 @@ const Hero: React.FC<IHero> = ({name, avatar_url, occupation, linkedin, github})
                 <div className={styles.buttons}>
                     <Button label="Download CV" isLight={true}/>
                     <Button label="Contact Me" />
+                </div>
+                <div className={styles.socials}>
+                    <div className={styles.social}>
+                        <img src={Linkedin} alt="Linkedin" />
+                    </div>
+                    <div className={styles.social}>
+                        <img src={Github} alt="Github" />
+                    </div>
                 </div>
             </div>
         </div>

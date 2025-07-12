@@ -1,23 +1,33 @@
 import { useState } from 'react';
 import styles from './index.module.css';
+import { account } from '../../appwrite/config';
+import { AppwriteException } from 'appwrite';
+import { useNavigate } from 'react-router';
 
 const Login: React.FC = (): React.ReactElement => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const navigate = useNavigate();
+
+  const login = async (email: string, password: string) => {
+      try {
+          return account.createEmailPasswordSession(email, password);
+      } catch (error) {
+        if (error instanceof AppwriteException) {
+          console.error(error.message);
+          throw new Error(error.message);
+        }
+        console.error(error || "Failed to login");
+      } finally{
+        setIsLoading(false);
+      }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Console log the credentials
-    console.log('Email:', email);
-    console.log('Password:', password);
-    
-    // Simulate loading state
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    login(email, password).then(() => navigate("/HEllo"));
   };
 
   return (

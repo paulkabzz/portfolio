@@ -1,16 +1,23 @@
 import { Navigate, Outlet } from "react-router";
+import { useAuth } from "../context/auth-context";
 
 interface IProtectedRoute {
     children?: React.ReactNode;
-    redirectPath?:string;
+    redirectPath?: string;
 }
 
-const ProtectedRoute: React.FC<IProtectedRoute> = ({ children, redirectPath="/login" }) => {
-    const user = null;
+const ProtectedRoute: React.FC<IProtectedRoute> = ({ children, redirectPath = "/login" }) => {
+    const { isAuthenticated, isLoading } = useAuth();
 
-    if (!user) return <Navigate to={redirectPath} />;
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
-    return children ? <>children</> : <Outlet />;
-}
+    if (!isAuthenticated) {
+        return <Navigate to={redirectPath} replace />;
+    }
+
+    return children ? <>{children}</> : <Outlet />;
+};
 
 export default ProtectedRoute;

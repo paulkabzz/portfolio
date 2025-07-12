@@ -1,33 +1,26 @@
 import { useState } from 'react';
 import styles from './index.module.css';
-import { account } from '../../appwrite/config';
-import { AppwriteException } from 'appwrite';
 import { useNavigate } from 'react-router';
+import { useAuth } from '../../context/auth-context';
 
 const Login: React.FC = (): React.ReactElement => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   const navigate = useNavigate();
-
-  const login = async (email: string, password: string) => {
-      try {
-          return account.createEmailPasswordSession(email, password);
-      } catch (error) {
-        if (error instanceof AppwriteException) {
-          console.error(error.message);
-          throw new Error(error.message);
-        }
-        console.error(error || "Failed to login");
-      } finally{
-        setIsLoading(false);
-      }
-  }
+  const { login, isLoading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    login(email, password).then(() => navigate("/HEllo"));
+    setError('');
+    
+    try {
+      await login(email, password);
+      navigate("/admin"); 
+    } catch (error: any) {
+      setError(error.message || 'Login failed');
+    }
   };
 
   return (
@@ -39,6 +32,12 @@ const Login: React.FC = (): React.ReactElement => {
         </div>
         
         <form onSubmit={handleSubmit} className={styles.form}>
+          {error && (
+            <div className={styles.error}>
+              {error}
+            </div>
+          )}
+          
           <div className={styles.inputGroup}>
             <label htmlFor="email" className={styles.label}>
               Email

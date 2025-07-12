@@ -1,0 +1,55 @@
+/* Hero Section */
+.buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.container {
+    display: flex;
+    min-height: 60vh;
+    align-items: center;
+    gap: 10%;
+}
+
+.imageSection {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.imageContainer {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 3px solid #ccc;
+    position: relative;
+    overflow: hidden;
+}
+
+.image {
+    position: absolute;
+    object-fit: cover;
+    width: 100%;
+    height: auto;
+}
+
+.textSection {
+    width: 100%;
+}
+
+.textContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.name {
+    /* font-size: 2rem; */
+    background-color: transparent;
+    color: var(--green);
+}
+
+.occupation {
+    color: var(--gray);
+}

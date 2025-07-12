@@ -4,6 +4,7 @@
   --primary: #131313;
   --secondary: #ddd;
   --green: #059669;
+  --gray: #777;
   --text-sm: 12px;
   --text-md: 14px;
   --text-lg: 1rem;
@@ -24,6 +25,7 @@
   text-decoration: none;
   list-style: none;
   font-family: "Inter", sans-serif;
+  color: var(--primary);
 }
 
 /* Chrome, Safari, Edge, Opera */

@@ -1,3 +1,5 @@
+/* Hamburger */
+
 .container {
   width: 20px;
   height: 12px;
@@ -20,4 +22,28 @@ span {
     .container {
         display: flex;
     }
+}
+
+/* Button */
+
+.buttonDefault, .buttonLight {
+    max-width: 150px;
+    width: 100%;
+    height: 40px;
+    padding: .5rem 1rem;
+    border-radius: 1000px;
+    font-weight: bold;
+    font-size: var(--text-sm);
+    cursor: pointer;
+}
+
+.buttonDefault {
+    background-color: var(--primary);
+    color: var(--secondary);
+}
+
+
+.buttonLight {
+    background-color: transparent;
+    border: 2px solid var(--primary);
 }

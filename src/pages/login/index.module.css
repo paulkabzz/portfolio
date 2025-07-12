@@ -224,7 +224,7 @@
 }
 
 .signupLink:hover {
-  color: #059669;
+  color: var(--green);
 }
 
 /* Responsive */

@@ -1,0 +1,23 @@
+.container {
+  width: 20px;
+  height: 12px;
+  cursor: pointer;
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  background-color: transparent;
+}
+
+span {
+  height: 1.5px;
+  width: 100%;
+  border-radius: 100px;
+  background: var(--primary);
+}
+
+@media screen and (max-width: 750px) {
+    .container {
+        display: flex;
+    }
+}

@@ -128,13 +128,11 @@ export default function EditProjectPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/projects">
-          <Button variant="ghost" size="sm" className="hover:bg-secondary/50">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Projects
+      <div className="flex items-start gap-4">
+          <Button variant="ghost" size="sm" className="hover:bg-secondary/50 cursor-pointer flex items-center justify-center" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-        </Link>
+
         <div>
           <h1 className="text-3xl font-bold text-primary">Edit Project</h1>
           <p className="text-primary/70 mt-2">Update your project information</p>

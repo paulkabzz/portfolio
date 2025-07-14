@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useProjects } from "@/app/context/project-context"
 
 interface Project {
   id: string
@@ -31,15 +32,16 @@ interface Project {
 }
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([])
+  const { projects } = useProjects();
+  // const [projects, setProjects] = useState<Project[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
-  useEffect(() => {
-    const savedProjects = localStorage.getItem("portfolio-projects")
-    if (savedProjects) {
-      setProjects(JSON.parse(savedProjects))
-    }
-  }, [])
+  // useEffect(() => {
+  //   const savedProjects = localStorage.getItem("portfolio-projects")
+  //   if (savedProjects) {
+  //     setProjects(JSON.parse(savedProjects))
+  //   }
+  // }, [])
 
   const filteredProjects = projects.filter(
     (project) =>
@@ -50,7 +52,7 @@ export default function ProjectsPage() {
 
   const deleteProject = (id: string) => {
     const updatedProjects = projects.filter((project) => project.id !== id)
-    setProjects(updatedProjects)
+    // setProjects(updatedProjects)
     localStorage.setItem("portfolio-projects", JSON.stringify(updatedProjects))
   }
 
@@ -91,7 +93,7 @@ export default function ProjectsPage() {
             <Card key={project.id} className="border-secondary hover:shadow-lg transition-shadow">
               <CardContent className="p-0">
                 <img
-                  src={project.image || "/placeholder.svg"}
+                  src={project.image_url || "/placeholder.svg"}
                   alt={project.name}
                   className="w-full h-48 object-cover rounded-t-lg"
                 />
@@ -142,17 +144,17 @@ export default function ProjectsPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    {project.githubUrl && (
+                    {project.github_url && (
                       <Button size="sm" variant="outline" className="flex-1 border-secondary bg-transparent" asChild>
-                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                        <a href={project.github_url} target="_blank" rel="noopener noreferrer">
                           <Github className="h-4 w-4 mr-1" />
                           Code
                         </a>
                       </Button>
                     )}
-                    {project.liveUrl && (
+                    {project.live_url && (
                       <Button size="sm" className="flex-1 bg-green hover:bg-green/90 text-white" asChild>
-                        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                        <a href={project.live_url} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-4 w-4 mr-1" />
                           Live
                         </a>

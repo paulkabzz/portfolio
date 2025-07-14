@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,31 +9,27 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Upload, X, Plus } from "lucide-react"
+import { ArrowLeft, Upload, X, Plus, Loader2 } from "lucide-react"
 import Link from "next/link"
-
-interface Project {
-  id: string
-  name: string
-  description: string
-  image: string
-  githubUrl: string
-  liveUrl: string
-  technologies: string[]
-  createdAt: string
-}
+import { createProject } from "@/lib/project"
+import { useToast } from "@/hooks/use-toast"
+// import { toast } from "@/components/ui/toaster"
 
 export default function NewProjectPage() {
   const router = useRouter()
+  const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    image: "",
-    githubUrl: "",
-    liveUrl: "",
+    github_url: "",
+    live_url: "",
   })
+  
   const [technologies, setTechnologies] = useState<string[]>([])
   const [newTech, setNewTech] = useState("")
+  const [image_url, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState("")
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -45,10 +40,30 @@ export default function NewProjectPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 10MB",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setImageFile(file)
       const reader = new FileReader()
       reader.onload = (e) => {
         const result = e.target?.result as string
-        setFormData((prev) => ({ ...prev, image: result }))
         setImagePreview(result)
       }
       reader.readAsDataURL(file)
@@ -66,35 +81,63 @@ export default function NewProjectPage() {
     setTechnologies((prev) => prev.filter((t) => t !== tech))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    const newProject: Project = {
-      id: Date.now().toString(),
-      ...formData,
-      technologies,
-      createdAt: new Date().toISOString(),
+    
+    if (!formData.name || !formData.description || !image_url) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in all required fields and upload an image",
+        variant: "destructive",
+      })
+      return
     }
 
-    // Save to localStorage
-    const existingProjects = JSON.parse(localStorage.getItem("portfolio-projects") || "[]")
-    const updatedProjects = [...existingProjects, newProject]
-    localStorage.setItem("portfolio-projects", JSON.stringify(updatedProjects))
+    setIsSubmitting(true)
+    
+    try {
+      await createProject({
+        name: formData.name,
+        description: formData.description,
+        github_url: formData.github_url,
+        live_url: formData.live_url,
+        technologies,
+        image_url,
+      })
 
-    router.push("/dashboard/projects")
+      toast({
+        title: "Project created successfully",
+        description: "Your project has been added to your portfolio",
+      })
+
+      router.push("/dashboard/projects")
+    } catch (error) {
+      console.error('Error creating project:', error)
+      toast({
+        title: "Error creating project",
+        description: "Please try again later",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const isFormValid = formData.name && formData.description && formData.image
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview("")
+  }
+
+  const isFormValid = formData.name && formData.description && image_url;
+
+  // const navigate = useRouter();
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/projects">
-          <Button variant="ghost" size="sm" className="hover:bg-secondary/50">
+          <Button variant="ghost" size="sm" className="hover:bg-secondary/50" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Projects
           </Button>
-        </Link>
         <div>
           <h1 className="text-3xl font-bold text-primary">Add New Project</h1>
           <p className="text-primary/70 mt-2">Create a new project for your portfolio</p>
@@ -123,6 +166,7 @@ export default function NewProjectPage() {
                     placeholder="My Awesome Project"
                     className="border-secondary focus:border-green"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -139,34 +183,37 @@ export default function NewProjectPage() {
                     rows={4}
                     className="border-secondary focus:border-green resize-none"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="githubUrl" className="text-primary">
+                  <Label htmlFor="github_url" className="text-primary">
                     GitHub URL
                   </Label>
                   <Input
-                    id="githubUrl"
-                    name="githubUrl"
-                    value={formData.githubUrl}
+                    id="github_url"
+                    name="github_url"
+                    value={formData.github_url}
                     onChange={handleInputChange}
                     placeholder="https://github.com/username/project"
                     className="border-secondary focus:border-green"
+                    disabled={isSubmitting}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="liveUrl" className="text-primary">
+                  <Label htmlFor="live_url" className="text-primary">
                     Live URL
                   </Label>
                   <Input
-                    id="liveUrl"
-                    name="liveUrl"
-                    value={formData.liveUrl}
+                    id="live_url"
+                    name="live_url"
+                    value={formData.live_url}
                     onChange={handleInputChange}
                     placeholder="https://myproject.com"
                     className="border-secondary focus:border-green"
+                    disabled={isSubmitting}
                   />
                 </div>
               </CardContent>
@@ -185,8 +232,14 @@ export default function NewProjectPage() {
                     placeholder="e.g., React, TypeScript, Node.js"
                     className="border-secondary focus:border-green"
                     onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTechnology())}
+                    disabled={isSubmitting}
                   />
-                  <Button type="button" onClick={addTechnology} className="bg-green hover:bg-green/90 text-white">
+                  <Button 
+                    type="button" 
+                    onClick={addTechnology} 
+                    className="bg-green hover:bg-green/90 text-white"
+                    disabled={isSubmitting}
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -200,6 +253,7 @@ export default function NewProjectPage() {
                           type="button"
                           onClick={() => removeTechnology(tech)}
                           className="ml-2 hover:text-red-500"
+                          disabled={isSubmitting}
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -226,18 +280,16 @@ export default function NewProjectPage() {
                     {imagePreview ? (
                       <div className="space-y-4">
                         <img
-                          src={imagePreview || "/placeholder.svg"}
+                          src={imagePreview}
                           alt="Project preview"
                           className="w-full h-48 object-cover rounded-lg"
                         />
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => {
-                            setImagePreview("")
-                            setFormData((prev) => ({ ...prev, image: "" }))
-                          }}
+                          onClick={removeImage}
                           className="border-secondary text-primary hover:bg-secondary/50"
+                          disabled={isSubmitting}
                         >
                           Remove Image
                         </Button>
@@ -254,6 +306,7 @@ export default function NewProjectPage() {
                               accept="image/*"
                               onChange={handleImageUpload}
                               className="hidden"
+                              disabled={isSubmitting}
                             />
                           </Label>
                           <p className="text-sm text-primary/60 mt-1">PNG, JPG, GIF up to 10MB</p>
@@ -274,7 +327,7 @@ export default function NewProjectPage() {
                 <div className="border border-secondary rounded-lg p-4 space-y-3">
                   {imagePreview && (
                     <img
-                      src={imagePreview || "/placeholder.svg"}
+                      src={imagePreview}
                       alt="Preview"
                       className="w-full h-32 object-cover rounded"
                     />
@@ -305,16 +358,27 @@ export default function NewProjectPage() {
 
         <div className="flex gap-4 justify-end">
           <Link href="/dashboard/projects">
-            <Button variant="outline" className="border-secondary text-primary hover:bg-secondary/50 bg-transparent">
+            <Button 
+              variant="outline" 
+              className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
           </Link>
           <Button
             type="submit"
-            disabled={!isFormValid}
+            disabled={!isFormValid || isSubmitting}
             className="bg-green hover:bg-green/90 text-white disabled:opacity-50"
           >
-            Create Project
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating Project...
+              </>
+            ) : (
+              "Create Project"
+            )}
           </Button>
         </div>
       </form>

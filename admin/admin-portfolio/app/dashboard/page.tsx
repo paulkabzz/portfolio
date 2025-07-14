@@ -5,18 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { FolderOpen, User, Plus, ExternalLink } from "lucide-react"
 import Link from "next/link"
-import { useAuth } from "../context/auth-context"
+// import { useAuth } from "../context/auth-context"
 import { appwriteConfig, databases } from "@/lib/appwrite";
 import { toast } from "@/hooks/use-toast";
 import DashboardSkeleton from "@/components/skeletons/dashboard-skeleton";
+import { useProjects } from "../context/project-context";
 
 interface Project {
   id: string
   name: string
   description: string
-  image: string
-  githubUrl: string
-  liveUrl: string
+  image_url: string
+  github_url: string
+  live_url: string
   technologies: string[]
   createdAt: string
 }
@@ -34,9 +35,11 @@ interface PersonalInfo {
 }
 
 export default function DashboardPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  // const [projects, setProjects] = useState<Project[]>([]);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo | any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const { projects, loading} = useProjects();
 
   useEffect(() => {
     loadUserProfile();
@@ -81,7 +84,7 @@ export default function DashboardPage() {
 
   const recentProjects = projects.slice(0, 3);
 
-  if (isLoading) return <DashboardSkeleton />
+  if (isLoading || loading) return <DashboardSkeleton />
 
   return (
     <div className="space-y-6">
@@ -159,14 +162,14 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           {recentProjects.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-2">
               {recentProjects.map((project) => (
                 <Card key={project.id} className="border-secondary">
                   <CardContent className="p-4">
                     <img
-                      src={project.image || "/placeholder.svg"}
+                      src={project.image_url || "/placeholder.svg"}
                       alt={project.name}
-                      className="w-full h-32 object-cover rounded-md mb-3"
+                      className="w-full h-[18rem] object-cover rounded-sm mb-3"
                     />
                     <h3 className="font-semibold text-primary mb-1">{project.name}</h3>
                     <p className="text-sm text-primary/70 mb-2 line-clamp-2">{project.description}</p>

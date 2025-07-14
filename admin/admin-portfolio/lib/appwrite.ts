@@ -1,3 +1,4 @@
+// lib/appwrite/config.ts
 import { Client, Account, Databases, Storage } from 'appwrite';
 
 export const appwriteConfig = {
@@ -6,7 +7,9 @@ export const appwriteConfig = {
     databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATBASE_ID,
     userImageStorage: process.env.NEXT_PUBLIC_APPWRITE_USER_IMG_STORAGE_ID,
     userCollectionId: process.env.NEXT_PUBLIC_APPWRITE_USER_COLLECTION_ID,
-    userDocumentId: process.env.NEXT_PUBLIC_APPWRITE_USER_DOCUMENT_ID
+    userDocumentId: process.env.NEXT_PUBLIC_APPWRITE_USER_DOCUMENT_ID,
+    projectCoverStorageId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_COVER_STORAGE_ID,
+    projectCollectionId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_COLLECTION_ID,
 } as const;
 
 export const client = new Client();
@@ -18,7 +21,13 @@ if (!appwriteConfig.url)
     throw new Error("Appwrite endpoint not set");
 
 if (!appwriteConfig.databaseId)
-    throw new Error("")
+    throw new Error("Database ID not set");
+
+if (!appwriteConfig.projectCollectionId)
+    throw new Error("Project Collection ID not set");
+
+if (!appwriteConfig.projectCoverStorageId)
+    throw new Error("Project Cover Storage ID not set");
 
 client.setProject(appwriteConfig.projectId);
 client.setEndpoint(appwriteConfig.url);
@@ -26,4 +35,3 @@ client.setEndpoint(appwriteConfig.url);
 export const account: Account = new Account(client);
 export const databases: Databases = new Databases(client);
 export const storage: Storage = new Storage(client);
-// export const userCollectionId = new

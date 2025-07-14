@@ -1,9 +1,9 @@
-import styles from './index.module.css';
+import React from 'react'
 
 const Admin = () => {
   return (
-    <div>Admin</div>
+    <div className='!text-red-400'>Admin</div>
   )
 }
 
-export default Admin;
+export default Admin

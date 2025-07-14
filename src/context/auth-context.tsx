@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { account } from '../appwrite/config';
 import { AppwriteException } from 'appwrite';
 
-interface User {
+export interface User {
   $id: string;
   email: string;
   name: string;

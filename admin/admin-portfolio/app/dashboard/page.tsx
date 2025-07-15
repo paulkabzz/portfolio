@@ -22,7 +22,7 @@ interface Project {
   createdAt: string
 }
 
-interface PersonalInfo {
+export interface PersonalInfo {
   name: string
   surname: string
   email: string

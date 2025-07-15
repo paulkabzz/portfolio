@@ -154,7 +154,7 @@ export default function DashboardPage() {
               <CardDescription className="text-primary/60">Your latest portfolio additions</CardDescription>
             </div>
             <Link href="/dashboard/projects">
-              <Button variant="outline" className="border-secondary text-primary hover:bg-secondary/50 bg-transparent">
+              <Button variant="outline" className="border-[#ddd] text-primary hover:bg-secondary/50 bg-transparent">
                 View All
               </Button>
             </Link>
@@ -166,11 +166,13 @@ export default function DashboardPage() {
               {recentProjects.map((project) => (
                 <Card key={project.id} className="border-secondary">
                   <CardContent className="p-4">
-                    <img
-                      src={project.image_url || "/placeholder.svg"}
-                      alt={project.name}
-                      className="w-full h-[18rem] object-cover rounded-sm mb-3"
-                    />
+                    <div className="w-full h-auto mb-5 overflow-hidden rounded-sm">
+                      <img
+                        src={project.image_url || "/placeholder.svg"}
+                        alt={project.name}
+                        className="w-full object-cover"
+                      />
+                    </div>
                     <h3 className="font-semibold text-primary mb-1">{project.name}</h3>
                     <p className="text-sm text-primary/70 mb-2 line-clamp-2">{project.description}</p>
                     <div className="flex gap-2">
@@ -216,7 +218,7 @@ export default function DashboardPage() {
               <Link href="/dashboard/profile">
                 <Button
                   variant="outline"
-                  className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
+                  className="border-[#ddd] text-primary hover:bg-secondary/50 bg-transparent"
                 >
                   Edit Profile
                 </Button>
@@ -231,14 +233,15 @@ export default function DashboardPage() {
                 className="w-16 h-16 rounded-full object-cover"
               />
               <div>
-                <h3 className="font-semibold text-primary">
+                <h3 className="font-semibold text-primary text-[1rem]">
                   {personalInfo.name} {personalInfo.surname}
                 </h3>
-                <p className="text-primary/70">{personalInfo.email}</p>
-                <p className="text-sm text-primary/60">{personalInfo.location}</p>
+                <p className="text-green text-[12px]">{personalInfo.email}</p>
+                <p className="text-green text-[12px]">{personalInfo.phone}</p>
+                <p className="text-sm text-primary/60 text-[12px]">{personalInfo.location}</p>
               </div>
             </div>
-            <p className="mt-4 text-primary/70">{personalInfo.bio}</p>
+            <p className="mt-4 text-primary/70 text-[12px]">{personalInfo.about}</p>
           </CardContent>
         </Card>
       )}

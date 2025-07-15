@@ -32,29 +32,22 @@ interface Project {
 }
 
 export default function ProjectsPage() {
-  const { projects } = useProjects();
-  // const [projects, setProjects] = useState<Project[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-
-  // useEffect(() => {
-  //   const savedProjects = localStorage.getItem("portfolio-projects")
-  //   if (savedProjects) {
-  //     setProjects(JSON.parse(savedProjects))
-  //   }
-  // }, [])
+  const { projects, loading } = useProjects();
+  const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProjects = projects.filter(
     (project) =>
       project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.technologies.some((tech) => tech.toLowerCase().includes(searchTerm.toLowerCase())),
-  )
+  );
 
   const deleteProject = (id: string) => {
-    const updatedProjects = projects.filter((project) => project.id !== id)
-    // setProjects(updatedProjects)
-    localStorage.setItem("portfolio-projects", JSON.stringify(updatedProjects))
+    const updatedProjects = projects.filter((project) => project.id !== id);
+    localStorage.setItem("portfolio-projects", JSON.stringify(updatedProjects));
   }
+
+  if (loading) return <div>Loading..</div>
 
   return (
     <div className="space-y-6">

@@ -163,7 +163,11 @@
 }
 
 * {
-  margin: 0;
+  font-family: "Inter", sans-serif, monospace;
+}
+
+/* * {
+    margin: 0;
   padding: 0;
   outline: none;
   box-sizing: border-box;
@@ -174,4 +178,4 @@
   list-style: none;
   font-family: "Inter", sans-serif;
   color: var(--primary);
-}
+} */

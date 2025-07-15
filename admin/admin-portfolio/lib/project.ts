@@ -137,7 +137,7 @@ export async function getProject(id: string): Promise<Project | null> {
 // Update a project
 export async function updateProject(id: string, data: Partial<CreateProjectData>): Promise<Project> {
   try {
-    let updateData: any = { ...data };
+    const updateData: any = { ...data };
     
     // Handle image update if new file is provided
     if (data.image_url) {

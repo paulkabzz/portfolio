@@ -1,0 +1,49 @@
+/* Hamburger */
+
+.container {
+  width: 20px;
+  height: 12px;
+  cursor: pointer;
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  background-color: transparent;
+}
+
+.span {
+  height: 1.5px;
+  width: 100%;
+  border-radius: 100px;
+  background: var(--primary);
+}
+
+@media screen and (max-width: 750px) {
+    .container {
+        display: flex;
+    }
+}
+
+/* Button */
+
+.buttonDefault, .buttonLight {
+    max-width: 150px;
+    width: 100%;
+    height: 40px;
+    padding: .5rem 1rem;
+    border-radius: 1000px;
+    font-weight: bold;
+    font-size: var(--text-sm);
+    cursor: pointer;
+}
+
+.buttonDefault {
+    background-color: var(--primary);
+    color: var(--secondary);
+}
+
+
+.buttonLight {
+    background-color: transparent;
+    border: 2px solid var(--primary);
+}

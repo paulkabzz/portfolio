@@ -15,6 +15,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/app/context/auth-context"
 
 const menuItems = [
   {
@@ -40,14 +41,16 @@ const menuItems = [
 ]
 
 export function AppSidebar() {
+
+  const { user } = useAuth();
   return (
     <Sidebar className="border-r border-secondary">
       <SidebarHeader className="border-b border-secondary p-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <span className="text-sm font-bold text-white">P</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary p-4">
+            <span className="text-sm font-bold text-white">{user?.name.charAt(0).toUpperCase() ?? ""}.{user?.name.split(" ")[1].charAt(0).toUpperCase() ?? ""}</span>
           </div>
-          <span className="font-semibold text-primary">Portfolio Admin</span>
+          <span className="font-semibold text-primary">{user?.name}</span>
         </div>
       </SidebarHeader>
       <SidebarContent>

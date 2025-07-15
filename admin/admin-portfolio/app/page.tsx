@@ -36,6 +36,7 @@ export default function Home() {
         phone: userData.phone || "",
         linkedin: userData.linkedin || "",
         github: userData.github || "",
+        headline: userData.headline || ""
       }
 
       setPersonalInfo(profileData);
@@ -82,7 +83,7 @@ export default function Home() {
   return (
     <div className="">
         <NavBar links={links} name={personalInfo?.name || "Name"}/>
-        <Hero name={personalInfo?.name || "Name"} avatar_url={personalInfo?.image_url || "/github.png"} occupation="jsjsjsj" github={personalInfo?.github} linkedin={personalInfo?.linkedin} />
+        <Hero headline={personalInfo?.headline ?? `Hello, I'm ${personalInfo?.name}`} name={personalInfo?.name || "Name"} avatar_url={personalInfo?.image_url || "/github.png"} occupation="jsjsjsj" github={personalInfo?.github} linkedin={personalInfo?.linkedin} />
 
     </div>
   );

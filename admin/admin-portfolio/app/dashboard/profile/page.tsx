@@ -24,6 +24,7 @@ interface PersonalInfo {
   phone: string
   linkedin: string
   github: string
+  headline: string
 }
 
 export default function ProfilePage() {
@@ -38,6 +39,7 @@ export default function ProfilePage() {
     phone: "",
     linkedin: "",
     github: "",
+    headline: ""
   });
 
   const [originalData, setOriginalData] = useState<PersonalInfo>({
@@ -50,6 +52,7 @@ export default function ProfilePage() {
     phone: "",
     linkedin: "",
     github: "",
+    headline: ""
   });
 
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -81,6 +84,7 @@ export default function ProfilePage() {
         phone: userData.phone || "",
         linkedin: userData.linkedin || "",
         github: userData.github || "",
+        headline: userData.headline || ""
       }
       
       setFormData(profileData)
@@ -342,7 +346,8 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
                 <Label htmlFor="email" className="text-primary font-bold">
                   Email
                 </Label>
@@ -355,7 +360,24 @@ export default function ProfilePage() {
                   placeholder="john.doe@example.com"
                   className="border-secondary focus:border-green"
                 />
+                </div>
+
+                <div>
+                  <Label htmlFor="headline" className="text-primary font-bold">
+                    Headline
+                  </Label>
+                  <Input
+                    id="headline"
+                    name="headline"
+                    type="text"
+                    value={formData.headline}
+                    onChange={handleInputChange}
+                    placeholder="Hello, I'm <John Doe>"
+                    className="border-secondary focus:border-green"
+                  />
+                </div>
               </div>
+
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>

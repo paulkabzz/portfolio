@@ -32,6 +32,7 @@ export interface PersonalInfo {
   phone: string
   linkedin: string
   github: string
+  headline: string
 }
 
 export default function DashboardPage() {

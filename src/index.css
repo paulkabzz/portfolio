@@ -27,14 +27,6 @@
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
 
 .line-clamp-2 {
   display: -webkit-box;

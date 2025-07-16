@@ -17,7 +17,7 @@ const Headline = ({ headline }: {headline: string}) => {
 
 
     return (
-        <h3 className="font-bold text-[1.25rem]">
+        <h3 className="font-bold text-[1rem]">
             {parseTextWithFormatting(headline)}
         </h3>
     );

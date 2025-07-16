@@ -28,6 +28,7 @@ export interface PersonalInfo {
   email: string
   about: string
   image_url: string
+  about_image_url: string
   location: string
   phone: string
   linkedin: string

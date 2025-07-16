@@ -1,7 +1,6 @@
 import Button from "../common/buttons/button";
 import styles from './index.module.css';
-import Github from '../../assets/github.png';
-import Linkedin from '../../assets/linkedin.png';
+import { GithubIcon, LinkedinIcon } from "lucide-react";
 
 interface IHero {
     name: string;
@@ -33,10 +32,10 @@ const Hero: React.FC<IHero> = ({name, avatar_url, occupation, linkedin, github})
                 </div>
                 <div className={styles.socials}>
                     <div className={styles.social}>
-                        <img src={Linkedin} alt="Linkedin" />
+                        <GithubIcon />
                     </div>
                     <div className={styles.social}>
-                        <img src={Github} alt="Github" />
+                        <LinkedinIcon />
                     </div>
                 </div>
             </div>

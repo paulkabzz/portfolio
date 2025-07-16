@@ -33,6 +33,7 @@ export default function Home() {
         email: userData.email || "",
         about: userData.about || "",
         image_url: userData.image_url || "",
+        about_image_url: userData.about_image_url || "",
         location: userData.location || "",
         phone: userData.phone || "",
         linkedin: userData.linkedin || "",
@@ -86,7 +87,7 @@ export default function Home() {
     <div className="">
         <NavBar links={links} name={personalInfo?.name || "Name"}/>
         <Hero headline={personalInfo?.headline ?? `Hello, I'm ${personalInfo?.name}`} name={personalInfo?.name || "Name"} avatar_url={personalInfo?.image_url || "/github.png"} occupation={personalInfo?.role ?? "Student"} github={personalInfo?.github} linkedin={personalInfo?.linkedin} />
-       { personalInfo?.about && <About about={personalInfo?.about} /> }
+       { personalInfo?.about && <About img={personalInfo.about_image_url} about={personalInfo?.about} /> }
     </div>
   );
 }

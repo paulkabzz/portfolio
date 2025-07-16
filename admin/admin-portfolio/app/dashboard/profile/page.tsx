@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Upload, Save, User, Loader2 } from "lucide-react"
+import { Upload, Save, User, Loader2, Image } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { databases, storage, appwriteConfig } from "@/lib/appwrite"
-import { ID, Query } from "appwrite"
+import { ID } from "appwrite"
 import ProfileLoadingSkeleton from "@/components/skeletons/profile-skeleton"
 import { parseTextWithFormatting } from "@/components/utils"
 
@@ -21,6 +21,7 @@ interface PersonalInfo {
   email: string
   about: string
   image_url: string
+  about_image_url: string
   location: string
   phone: string
   linkedin: string
@@ -37,6 +38,7 @@ export default function ProfilePage() {
     email: "",
     about: "",
     image_url: "",
+    about_image_url: "",
     location: "",
     phone: "",
     linkedin: "",
@@ -51,6 +53,7 @@ export default function ProfilePage() {
     email: "",
     about: "",
     image_url: "",
+    about_image_url: "",
     location: "",
     phone: "",
     linkedin: "",
@@ -60,9 +63,12 @@ export default function ProfilePage() {
   });
 
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [aboutImagePreview, setAboutImagePreview] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
+  const [isUploadingAboutImage, setIsUploadingAboutImage] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedAboutFile, setSelectedAboutFile] = useState<File | null>(null);
 
   useEffect(() => {
     loadUserProfile()
@@ -84,6 +90,7 @@ export default function ProfilePage() {
         email: userData.email || "",
         about: userData.about || "",
         image_url: userData.image_url || "",
+        about_image_url: userData.about_image_url || "",
         location: userData.location || "",
         phone: userData.phone || "",
         linkedin: userData.linkedin || "",
@@ -95,6 +102,7 @@ export default function ProfilePage() {
       setFormData(profileData)
       setOriginalData(profileData) // Store original data for comparison
       setImagePreview(userData.image_url || "")
+      setAboutImagePreview(userData.about_image_url || "")
     } catch (error) {
       console.error("Error loading user profile:", error)
       toast({
@@ -127,15 +135,35 @@ export default function ProfilePage() {
     reader.readAsDataURL(file)
   }
 
-  const uploadImageToAppwrite = async (file: File): Promise<string> => {
+  const handleAboutImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setSelectedAboutFile(file)
+    
+    // Show preview immediately
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const result = e.target?.result as string
+      setAboutImagePreview(result)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const uploadImageToAppwrite = async (file: File, isAboutImage: boolean = false): Promise<string> => {
     try {
-      setIsUploadingImage(true)
+      if (isAboutImage) {
+        setIsUploadingAboutImage(true)
+      } else {
+        setIsUploadingImage(true)
+      }
       
       // Delete previous image if exists
-      if (formData.image_url) {
+      const existingImageUrl = isAboutImage ? formData.about_image_url : formData.image_url
+      if (existingImageUrl) {
         try {
           // Extract file ID from URL if it's an Appwrite URL
-          const urlParts = formData.image_url.split('/')
+          const urlParts = existingImageUrl.split('/')
           const fileId = urlParts[urlParts.length - 2] // Usually the second to last part
           await storage.deleteFile(appwriteConfig.userImageStorage!, fileId)
         } catch (deleteError) {
@@ -161,7 +189,11 @@ export default function ProfilePage() {
       console.error("Error uploading image:", error)
       throw error
     } finally {
-      setIsUploadingImage(false)
+      if (isAboutImage) {
+        setIsUploadingAboutImage(false)
+      } else {
+        setIsUploadingImage(false)
+      }
     }
   }
 
@@ -185,20 +217,31 @@ export default function ProfilePage() {
 
     try {
       let imageUrl = formData.image_url
+      let aboutImageUrl = formData.about_image_url
       let hasImageChanged = false
+      let hasAboutImageChanged = false
 
-      // Upload new image if selected
+      // Upload new profile image if selected
       if (selectedFile) {
-        imageUrl = await uploadImageToAppwrite(selectedFile)
+        imageUrl = await uploadImageToAppwrite(selectedFile, false)
         hasImageChanged = true
+      }
+
+      // Upload new about image if selected
+      if (selectedAboutFile) {
+        aboutImageUrl = await uploadImageToAppwrite(selectedAboutFile, true)
+        hasAboutImageChanged = true
       }
 
       // Get only changed fields
       const changedFields = getChangedFields()
       
-      // If image changed, include it in the update
+      // If images changed, include them in the update
       if (hasImageChanged) {
         changedFields.image_url = imageUrl
+      }
+      if (hasAboutImageChanged) {
+        changedFields.about_image_url = aboutImageUrl
       }
 
       // Only proceed if there are changes
@@ -222,10 +265,11 @@ export default function ProfilePage() {
       )
 
       // Update local state
-      const updatedFormData = { ...formData, image_url: imageUrl }
+      const updatedFormData = { ...formData, image_url: imageUrl, about_image_url: aboutImageUrl }
       setFormData(updatedFormData)
       setOriginalData(updatedFormData) // Update original data to new state
       setSelectedFile(null)
+      setSelectedAboutFile(null)
 
       toast({
         title: "Profile Updated",
@@ -258,29 +302,33 @@ export default function ProfilePage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Profile Image */}
+          {/* Profile Images */}
           <Card className="border-secondary">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-primary">Profile Picture</CardTitle>
-              <CardDescription className="text-primary/60">Upload your professional photo</CardDescription>
+              <CardTitle className="text-lg font-bold text-primary">Profile Images</CardTitle>
+              <CardDescription className="text-primary/60">Upload your professional and about photos</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              {/* Profile Picture */}
               <div className="flex flex-col items-center space-y-4">
+                <div className="text-center">
+                  <h3 className="text-sm font-semibold text-primary mb-2">Profile Picture</h3>
+                </div>
                 <div className="relative">
                   {imagePreview ? (
                     <img
                       src={imagePreview}
                       alt="Profile"
-                      className="w-32 h-32 rounded-full object-cover border-4 border-secondary"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-secondary"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-full bg-secondary flex items-center justify-center">
-                      <User className="h-16 w-16 text-primary/30" />
+                    <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center">
+                      <User className="h-12 w-12 text-primary/30" />
                     </div>
                   )}
                   {isUploadingImage && (
                     <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                      <Loader2 className="h-8 w-8 animate-spin text-white" />
+                      <Loader2 className="h-6 w-6 animate-spin text-white" />
                     </div>
                   )}
                 </div>
@@ -289,17 +337,18 @@ export default function ProfilePage() {
                   <Button
                     type="button"
                     variant="outline"
+                    size="sm"
                     className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
                     disabled={isUploadingImage}
                     asChild
                   >
                     <span>
                       {isUploadingImage ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
                       ) : (
-                        <Upload className="h-4 w-4 mr-2" />
+                        <Upload className="h-3 w-3 mr-2" />
                       )}
-                      {isUploadingImage ? "Uploading..." : "Upload Photo"}
+                      {isUploadingImage ? "Uploading..." : "Upload"}
                     </span>
                   </Button>
                   <Input
@@ -309,6 +358,59 @@ export default function ProfilePage() {
                     onChange={handleImageUpload}
                     className="hidden"
                     disabled={isUploadingImage}
+                  />
+                </Label>
+              </div>
+
+              {/* About Image */}
+              <div className="flex flex-col items-center space-y-4">
+                <div className="text-center">
+                  <h3 className="text-sm font-semibold text-primary mb-2">About Image</h3>
+                </div>
+                <div className="relative">
+                  {aboutImagePreview ? (
+                    <img
+                      src={aboutImagePreview}
+                      alt="About"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-secondary"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center">
+                      <Image className="h-12 w-12 text-primary/30" />
+                    </div>
+                  )}
+                  {isUploadingAboutImage && (
+                    <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-white" />
+                    </div>
+                  )}
+                </div>
+
+                <Label htmlFor="aboutImage" className="cursor-pointer">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
+                    disabled={isUploadingAboutImage}
+                    asChild
+                  >
+                    <span>
+                      {isUploadingAboutImage ? (
+                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="h-3 w-3 mr-2" />
+                      )}
+                      {isUploadingAboutImage ? "Uploading..." : "Upload"}
+                    </span>
+                  </Button>
+                  <Input
+                    id="aboutImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAboutImageUpload}
+                    className="hidden"
+                    disabled={isUploadingAboutImage}
                   />
                 </Label>
               </div>
@@ -524,7 +626,7 @@ export default function ProfilePage() {
           <Button 
             type="submit" 
             className="bg-green hover:bg-green/90 text-white"
-            disabled={isLoading || isUploadingImage}
+            disabled={isLoading || isUploadingImage || isUploadingAboutImage}
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

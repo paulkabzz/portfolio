@@ -35,7 +35,7 @@ const menuItems = [
   },
   {
     title: "Experience",
-    url: "/dashboard/experience",
+    url: "/dashboard/experiences",
     icon: Briefcase
   },
   {

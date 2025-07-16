@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, Upload, X, Plus, Loader2, Calendar, Briefcase } from "lucide-react"
+import { ArrowLeft, Upload, X, Plus, Loader2, Calendar, Briefcase, MapPin, Globe } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useExperience } from "@/app/context/experience-context"
@@ -24,6 +24,9 @@ export default function NewExperiencePage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    company: "",
+    location: "",
+    company_url: "",
     startDate: "",
     endDate: "",
     current: false,
@@ -160,7 +163,7 @@ export default function NewExperiencePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.title || !formData.description) {
+    if (!formData.title || !formData.description || !formData.company) {
       toast({
         title: "Missing required fields",
         description: "Please fill in all required fields",
@@ -175,9 +178,13 @@ export default function NewExperiencePage() {
       const experienceData = {
         title: formData.title,
         description: formData.description,
+        company: formData.company,
+        location: formData.location,
+        company_url: formData.company_url,
         startDate: formData.startDate,
         endDate: formData.current ? "" : formData.endDate,
         current: formData.current,
+        skills: skills,
         images: [], // This will be populated by the context
       }
 
@@ -201,7 +208,7 @@ export default function NewExperiencePage() {
     }
   }
 
-  const isFormValid = formData.title && formData.description
+  const isFormValid = formData.title && formData.description && formData.company
 
   return (
     <div className="space-y-6">
@@ -240,6 +247,55 @@ export default function NewExperiencePage() {
                     placeholder="Software Engineer"
                     className="border-secondary focus:border-green"
                     required
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="company" className="text-primary">
+                    Company *
+                  </Label>
+                  <Input
+                    id="company"
+                    name="company"
+                    value={formData.company}
+                    onChange={handleInputChange}
+                    placeholder="Google"
+                    className="border-secondary focus:border-green"
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="location" className="text-primary flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Location
+                  </Label>
+                  <Input
+                    id="location"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    placeholder="San Francisco, CA"
+                    className="border-secondary focus:border-green"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="company_url" className="text-primary flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Company Website
+                  </Label>
+                  <Input
+                    id="company_url"
+                    name="company_url"
+                    type="url"
+                    value={formData.company_url}
+                    onChange={handleInputChange}
+                    placeholder="https://www.company.com"
+                    className="border-secondary focus:border-green"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -496,6 +552,10 @@ export default function NewExperiencePage() {
                     <h3 className="font-semibold text-primary">
                       {formData.title || "Job Title"}
                     </h3>
+                    <p className="text-sm text-primary/60 font-medium">
+                      {formData.company || "Company Name"}
+                      {formData.location && ` • ${formData.location}`}
+                    </p>
                     <p className="text-sm text-primary/70">
                       {formData.description || "Job description will appear here..."}
                     </p>

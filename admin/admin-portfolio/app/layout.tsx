@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "./context/auth-context";
 import { ProjectProvider } from "./context/project-context";
 import { ExperienceProvider } from "./context/experience-context";
+import { ToastProvider } from "@radix-ui/react-toast";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,14 +37,15 @@ export default function RootLayout({
       <body
         className={`${inter.variable}  ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-            
-        <AuthProvider>
-          <ProjectProvider>
-            <ExperienceProvider>
-              {children}
-            </ExperienceProvider>
-          </ProjectProvider>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <ProjectProvider>
+              <ExperienceProvider>
+                    {children}
+              </ExperienceProvider>
+            </ProjectProvider>
+          </AuthProvider> 
+        </ToastProvider>   
       </body>
     </html>
   );

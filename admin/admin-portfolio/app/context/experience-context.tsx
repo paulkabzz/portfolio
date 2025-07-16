@@ -8,9 +8,13 @@ export interface Experience {
   id: string
   title: string
   description: string
+  company: string
+  location: string
+  company_url: string
   startDate: string
   endDate: string
   current: boolean
+  skills: string[] // Array of skills
   images: string[] // Array of image URLs
   coverImage?: string // First image URL
   createdAt: string
@@ -57,8 +61,12 @@ export const ExperienceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         id: doc.$id,
         title: doc.title || '',
         description: doc.description || '',
+        company: doc.company || '',
+        location: doc.location || '',
+        company_url: doc.company_url || '',
         startDate: doc.start_date || '',
         endDate: doc.end_date || '',
+        skills: doc.skills || [], // Handle skills from database
         current: doc.current || false,
         images: doc.images || [],
         coverImage: doc.images?.[0] || undefined,
@@ -137,9 +145,13 @@ export const ExperienceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         {
           title: experienceData.title,
           description: experienceData.description,
+          company: experienceData.company,
+          location: experienceData.location,
+          company_url: experienceData.company_url,
           start_date: experienceData.startDate,
           end_date: experienceData.endDate,
           current: experienceData.current,
+          skills: experienceData.skills, // Include skills in database creation
           images: imageUrls,
         }
       )
@@ -148,8 +160,12 @@ export const ExperienceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         id: response.$id,
         title: response.title,
         description: response.description,
+        company: response.company,
+        location: response.location,
+        company_url: response.company_url,
         startDate: response.start_date,
         endDate: response.end_date,
+        skills: response.skills || [], // Handle skills from response
         current: response.current,
         images: response.images,
         coverImage: response.images?.[0],
@@ -208,9 +224,13 @@ export const ExperienceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       
       if (experienceData.title !== undefined) updateData.title = experienceData.title
       if (experienceData.description !== undefined) updateData.description = experienceData.description
+      if (experienceData.company !== undefined) updateData.company = experienceData.company
+      if (experienceData.location !== undefined) updateData.location = experienceData.location
+      if (experienceData.company_url !== undefined) updateData.company_url = experienceData.company_url
       if (experienceData.startDate !== undefined) updateData.start_date = experienceData.startDate
       if (experienceData.endDate !== undefined) updateData.end_date = experienceData.endDate
       if (experienceData.current !== undefined) updateData.current = experienceData.current
+      if (experienceData.skills !== undefined) updateData.skills = experienceData.skills // Include skills in update
 
       const response = await databases.updateDocument(
         appwriteConfig.databaseId!,
@@ -223,9 +243,13 @@ export const ExperienceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         id: response.$id,
         title: response.title,
         description: response.description,
+        company: response.company,
+        location: response.location,
+        company_url: response.company_url,
         startDate: response.start_date,
         endDate: response.end_date,
         current: response.current,
+        skills: response.skills || [], // Handle skills from response
         images: response.images,
         coverImage: response.images?.[0],
         createdAt: response.$createdAt,

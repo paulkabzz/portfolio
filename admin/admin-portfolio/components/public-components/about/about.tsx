@@ -8,7 +8,7 @@ interface IAbout {
 
 const About: React.FC<IAbout> = ({ about, img }) => {
   return (
-    <section className="w-full py-0 lg:py-24 bg-gradient-to-br from-white to-gray-50" id="about">
+    <section className="w-full py-0 lg:py-24 bg-white" id="about">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
@@ -31,8 +31,8 @@ const About: React.FC<IAbout> = ({ about, img }) => {
             </div>
 
             {/* Decorative elements */}
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#059669] rounded-full opacity-20"></div>
-            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-[#ddd] rounded-full opacity-30"></div>
+            {/* <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#059669] rounded-full opacity-20"></div>
+            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-[#ddd] rounded-full opacity-30"></div> */}
           </div>
 
           {/* Text Content */}

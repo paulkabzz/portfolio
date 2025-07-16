@@ -7,6 +7,7 @@ import { appwriteConfig, databases } from "@/lib/appwrite";
 import { useEffect, useState } from "react";
 import { PersonalInfo } from "./dashboard/page";
 import About from "@/components/public-components/about/about";
+import Projects from "@/components/public-components/projects/projects";
 
 export default function Home() {
 
@@ -56,7 +57,17 @@ export default function Home() {
     }
   }
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return (
+    <div className="min-h-60  h-screen w-full flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl">
+    <div className="flex flex-auto flex-col justify-center items-center p-4 md:p-5">
+      <div className="flex justify-center">
+        <div className="animate-spin inline-block size-6 border-3 border-current border-t-transparent text-green rounded-full" role="status" aria-label="loading">
+          <span className="sr-only"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  )
 
   console.log(personalInfo);
 
@@ -87,7 +98,8 @@ export default function Home() {
     <div className="">
         <NavBar links={links} name={personalInfo?.name || "Name"}/>
         <Hero headline={personalInfo?.headline ?? `Hello, I'm ${personalInfo?.name}`} name={personalInfo?.name || "Name"} avatar_url={personalInfo?.image_url || "/github.png"} occupation={personalInfo?.role ?? "Student"} github={personalInfo?.github} linkedin={personalInfo?.linkedin} />
-       { personalInfo?.about && <About img={personalInfo.about_image_url} about={personalInfo?.about} /> }
+        { personalInfo?.about && <About img={personalInfo.about_image_url} about={personalInfo?.about} /> }
+        <Projects />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Inter, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./context/auth-context";
 import { ProjectProvider } from "./context/project-context";
+import { ExperienceProvider } from "./context/experience-context";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -38,7 +39,9 @@ export default function RootLayout({
             
         <AuthProvider>
           <ProjectProvider>
-            {children}
+            <ExperienceProvider>
+              {children}
+            </ExperienceProvider>
           </ProjectProvider>
         </AuthProvider>
       </body>

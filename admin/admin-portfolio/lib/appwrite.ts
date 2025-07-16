@@ -10,6 +10,8 @@ export const appwriteConfig = {
     userDocumentId: process.env.NEXT_PUBLIC_APPWRITE_USER_DOCUMENT_ID,
     projectCoverStorageId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_COVER_STORAGE_ID,
     projectCollectionId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_COLLECTION_ID,
+    experienceStorageId: process.env.NEXT_PUBLIC_APPWRITE_EXPERIENCE_STORAGE_ID,
+    experinceCollectionId: process.env.NEXT_PUBLIC_APPWRITE_EXPERINCE_COLLECTION_ID
 } as const;
 
 export const client = new Client();

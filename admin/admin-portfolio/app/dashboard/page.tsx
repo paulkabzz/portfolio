@@ -5,11 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { FolderOpen, User, Plus, ExternalLink } from "lucide-react"
 import Link from "next/link"
-// import { useAuth } from "../context/auth-context"
 import { appwriteConfig, databases } from "@/lib/appwrite";
 import { toast } from "@/hooks/use-toast";
 import DashboardSkeleton from "@/components/skeletons/dashboard-skeleton";
 import { useProjects } from "../context/project-context";
+import { parseTextWithFormatting } from "@/components/utils";
 
 interface Project {
   id: string
@@ -33,6 +33,7 @@ export interface PersonalInfo {
   linkedin: string
   github: string
   headline: string
+  role: string
 }
 
 export default function DashboardPage() {
@@ -66,6 +67,7 @@ export default function DashboardPage() {
         phone: userData.phone || "",
         linkedin: userData.linkedin || "",
         github: userData.github || "",
+        role: userData.role || ""
       }
 
       setPersonalInfo(profileData);
@@ -242,7 +244,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-primary/60 text-[12px]">{personalInfo.location}</p>
               </div>
             </div>
-            <p className="mt-4 text-primary/70 text-[12px]">{personalInfo.about}</p>
+            <p className="mt-4 text-primary/70 text-[12px]">{parseTextWithFormatting(personalInfo.about)}</p>
           </CardContent>
         </Card>
       )}

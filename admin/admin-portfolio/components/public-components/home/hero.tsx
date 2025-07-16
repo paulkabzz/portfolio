@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Button from "../button/button";
 import styles from './index.module.css';
+import { parseTextWithFormatting } from "@/components/utils";
 
 
 interface IHero {
@@ -13,26 +14,11 @@ interface IHero {
 }
 
 const Headline = ({ headline }: {headline: string}) => {
-    // Customisable headline, <placeholder> is wrapped in span and colored green, this can be a name or any aspect of your header you want must be highlighted
-    const parseHeadline = (text: string) => {
-        // Split the text by < and > to identify placeholders
-        const parts = text.split(/(<[^>]*>)/);
-        
-        return parts.map((part, index) => {
-            // Check if the part is a placeholder (starts with < and ends with >)
-            if (part.startsWith('<') && part.endsWith('>')) {
-                // Extract the content inside the brackets
-                const content = part.slice(1, -1);
-                return <span key={index} className={styles.name}>{content}</span>;
-            }
-            // Return regular text as is
-            return part;
-        });
-    };
+
 
     return (
-        <h3 className="font-bold">
-            {parseHeadline(headline)}
+        <h3 className="font-bold text-[1.25rem]">
+            {parseTextWithFormatting(headline)}
         </h3>
     );
 };

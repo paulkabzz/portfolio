@@ -6,6 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { appwriteConfig, databases } from "@/lib/appwrite";
 import { useEffect, useState } from "react";
 import { PersonalInfo } from "./dashboard/page";
+import About from "@/components/public-components/about/about";
 
 export default function Home() {
 
@@ -36,7 +37,8 @@ export default function Home() {
         phone: userData.phone || "",
         linkedin: userData.linkedin || "",
         github: userData.github || "",
-        headline: userData.headline || ""
+        headline: userData.headline || "",
+        role: userData.role || ""
       }
 
       setPersonalInfo(profileData);
@@ -83,8 +85,8 @@ export default function Home() {
   return (
     <div className="">
         <NavBar links={links} name={personalInfo?.name || "Name"}/>
-        <Hero headline={personalInfo?.headline ?? `Hello, I'm ${personalInfo?.name}`} name={personalInfo?.name || "Name"} avatar_url={personalInfo?.image_url || "/github.png"} occupation="jsjsjsj" github={personalInfo?.github} linkedin={personalInfo?.linkedin} />
-
+        <Hero headline={personalInfo?.headline ?? `Hello, I'm ${personalInfo?.name}`} name={personalInfo?.name || "Name"} avatar_url={personalInfo?.image_url || "/github.png"} occupation={personalInfo?.role ?? "Student"} github={personalInfo?.github} linkedin={personalInfo?.linkedin} />
+       { personalInfo?.about && <About about={personalInfo?.about} /> }
     </div>
   );
 }

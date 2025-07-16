@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { databases, storage, appwriteConfig } from "@/lib/appwrite"
 import { ID, Query } from "appwrite"
 import ProfileLoadingSkeleton from "@/components/skeletons/profile-skeleton"
+import { parseTextWithFormatting } from "@/components/utils"
 
 interface PersonalInfo {
   name: string
@@ -25,6 +26,7 @@ interface PersonalInfo {
   linkedin: string
   github: string
   headline: string
+  role: string
 }
 
 export default function ProfilePage() {
@@ -39,7 +41,8 @@ export default function ProfilePage() {
     phone: "",
     linkedin: "",
     github: "",
-    headline: ""
+    headline: "",
+    role: ""
   });
 
   const [originalData, setOriginalData] = useState<PersonalInfo>({
@@ -52,7 +55,8 @@ export default function ProfilePage() {
     phone: "",
     linkedin: "",
     github: "",
-    headline: ""
+    headline: "",
+    role: ""
   });
 
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -84,7 +88,8 @@ export default function ProfilePage() {
         phone: userData.phone || "",
         linkedin: userData.linkedin || "",
         github: userData.github || "",
-        headline: userData.headline || ""
+        headline: userData.headline || "",
+        role: userData.role || ""
       }
       
       setFormData(profileData)
@@ -378,6 +383,21 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+              
+                <div>
+                  <Label htmlFor="role" className="text-primary font-bold">
+                    Role/Position or Title
+                  </Label>
+                  <Input
+                    id="role"
+                    name="role"
+                    type="text"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    placeholder="Computer Science and Engineering Student"
+                    className="border-secondary focus:border-green"
+                  />
+              </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
@@ -490,7 +510,7 @@ export default function ProfilePage() {
                   {formData.name || "First"} {formData.surname || "Last"}
                 </h2>
                 {formData.location && <p className="text-primary mb-2 text-[12px] font-bold">{formData.location}</p>}
-                <p className="text-primary/70 mb-3 text-[12px]">{formData.about || "Your about will appear here..."}</p>
+                <p className="text-primary/70 mb-3 text-[12px]">{parseTextWithFormatting(formData.about) || "Your about will appear here..."}</p>
                 <div className="flex gap-4 text-sm">
                   {formData.email && <span className="text-green text-[12px]">{formData.email}</span>}
                   {formData.phone && <span className="text-green text-[12px]">{formData.phone}</span>}

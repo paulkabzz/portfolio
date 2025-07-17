@@ -19,6 +19,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useProjects } from "@/app/context/project-context"
+import { parseTextWithFormatting } from "@/components/utils"
 
 interface Project {
   id: string
@@ -126,7 +127,7 @@ export default function ProjectsPage() {
                     </div>
                   </div>
 
-                  <p className="text-primary/70 text-sm mb-3 line-clamp-2">{project.description}</p>
+                  <p className="text-primary/70 text-sm mb-3 line-clamp-2">{parseTextWithFormatting(project.description)}</p>
 
                   <div className="flex flex-wrap gap-1 mb-3">
                     {project.technologies.map((tech) => (

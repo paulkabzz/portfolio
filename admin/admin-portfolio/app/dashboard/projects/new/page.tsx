@@ -14,6 +14,7 @@ import Link from "next/link"
 import { createProject } from "@/lib/project"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
+import { parseTextWithFormatting } from "@/components/utils"
 // import { toast } from "@/components/ui/toaster"
 
 export default function NewProjectPage() {
@@ -357,7 +358,7 @@ export default function NewProjectPage() {
                   )}
                   <h3 className="font-semibold text-primary">{formData.name || "Project Name"}</h3>
                   <p className="text-sm text-primary/70">
-                    {formData.description || "Project description will appear here..."}
+                    {parseTextWithFormatting(formData.description) || "Project description will appear here..."}
                   </p>
                   {technologies.length > 0 && (
                     <div className="flex flex-wrap gap-1">

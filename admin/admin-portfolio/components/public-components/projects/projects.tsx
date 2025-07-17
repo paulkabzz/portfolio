@@ -6,6 +6,7 @@ import { useProjects } from "@/app/context/project-context"
 import { ExternalLink, Github } from "lucide-react"
 import Link from "next/link"
 import { Button } from '@/components/ui/button';
+import { parseTextWithFormatting } from '@/components/utils';
 
 const Projects = () => {
   const { projects, loading } = useProjects();
@@ -52,7 +53,7 @@ const Projects = () => {
             {projects.map((project) => (
               <Card key={project.id} className="border-secondary">
                 <CardContent className="p-4">
-                  <div className="w-full h-auto mb-5 overflow-hidden rounded-sm">
+                  <div className="w-full h-auto max-h-[250px] mb-5 overflow-hidden rounded-sm">
                     <img
                       src={project.image_url || "/placeholder.svg"}
                       alt={project.name}
@@ -84,7 +85,7 @@ const Projects = () => {
                     </div> */}
                   </div>
                   
-                  <p className="text-sm text-primary/70 mb-2 line-clamp-2">{project.description}</p>
+                  <p className="text-sm text-primary/70 mb-2 line-clamp-2">{parseTextWithFormatting(project.description)}</p>
                   
                   <div className="flex gap-2">
                     {project.technologies.slice(0, 2).map((tech) => (

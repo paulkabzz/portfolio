@@ -178,7 +178,7 @@ export default function DashboardPage() {
                       />
                     </div>
                     <h3 className="font-semibold text-primary mb-1">{project.name}</h3>
-                    <p className="text-sm text-primary/70 mb-2 line-clamp-2">{project.description}</p>
+                    <p className="text-sm text-primary/70 mb-2 line-clamp-2">{parseTextWithFormatting(project.description)}</p>
                     <div className="flex gap-2">
                       {project.technologies.slice(0, 2).map((tech) => (
                         <span key={tech} className="px-2 py-1 bg-secondary text-primary text-xs rounded">

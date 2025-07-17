@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useProjects } from "@/app/context/project-context"
 import { Project, CreateProjectData } from "@/lib/project"
 import { Switch } from "@/components/ui/switch"
+import { parseTextWithFormatting } from "@/components/utils"
 
 export default function EditProjectPage() {
   const router = useRouter()
@@ -432,7 +433,7 @@ export default function EditProjectPage() {
                   )}
                   <h3 className="font-semibold text-primary">{formData.name || "Project Name"}</h3>
                   <p className="text-sm text-primary/70">
-                    {formData.description || "Project description will appear here..."}
+                    {parseTextWithFormatting(formData.description) || "Project description will appear here..."}
                   </p>
                   {technologies.length > 0 && (
                     <div className="flex flex-wrap gap-1">

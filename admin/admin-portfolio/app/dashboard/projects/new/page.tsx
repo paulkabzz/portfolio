@@ -13,6 +13,7 @@ import { ArrowLeft, Upload, X, Plus, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { createProject } from "@/lib/project"
 import { useToast } from "@/hooks/use-toast"
+import { Switch } from "@/components/ui/switch"
 // import { toast } from "@/components/ui/toaster"
 
 export default function NewProjectPage() {
@@ -23,6 +24,7 @@ export default function NewProjectPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    completed: false,
     github_url: "",
     live_url: "",
   })
@@ -100,6 +102,7 @@ export default function NewProjectPage() {
         name: formData.name,
         description: formData.description,
         github_url: formData.github_url,
+        completed: formData.completed,
         live_url: formData.live_url,
         technologies,
         image_url,
@@ -129,6 +132,14 @@ export default function NewProjectPage() {
   }
 
   const isFormValid = formData.name && formData.description && image_url;
+
+  const handleCompletedChange = (checked: boolean) => {
+    setFormData((prev) => ({ 
+      ...prev, 
+      completed: checked,
+    }))
+  }
+
 
   // const navigate = useRouter();
 
@@ -215,6 +226,18 @@ export default function NewProjectPage() {
                     className="border-secondary focus:border-green"
                     disabled={isSubmitting}
                   />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="completed"
+                    checked={formData.completed}
+                    onCheckedChange={handleCompletedChange}
+                    disabled={isSubmitting}
+                  />
+                  <Label htmlFor="completed" className="text-primary">
+                    The project is complete
+                  </Label>
                 </div>
               </CardContent>
             </Card>

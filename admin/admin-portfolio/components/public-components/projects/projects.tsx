@@ -41,9 +41,10 @@ const Projects = () => {
   return (
     <section className="py-12 px-4 max-w-7xl mx-auto">
       <div className="space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-primary mb-4">Projects</h1>
-          <p className="text-primary/70">My portfolio projects and work</p>
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h2 className="text-2xl md:text-2xl lg:text-2xl font-bold text-[#131313] mb-0">Projects</h2>
+          <div className="w-24 h-1 bg-[#059669] mx-auto rounded-full"></div>
         </div>
 
         {projects.length > 0 ? (
@@ -103,7 +104,7 @@ const Projects = () => {
                         <Button className='w-full'>
                             <Link href={project.github_url} className='w-full h-full' target='_blank'>Code</Link>
                         </Button>
-                        <Button className='w-full'>
+                        <Button className='w-full' disabled={!project.live_url}>
                             <Link href={project.live_url} className='w-full h-full flex items-center justify-center gap-2' target='_blank'>Live Project <ExternalLink className="!h-3 !w-3 text-white" /></Link>
                         </Button>
                     </div>

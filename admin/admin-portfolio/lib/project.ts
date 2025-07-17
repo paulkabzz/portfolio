@@ -5,6 +5,7 @@ export interface Project {
   id: string;
   name: string;
   description: string;
+  completed: boolean;
   image_url: string;
   github_url: string;
   live_url: string;
@@ -15,6 +16,7 @@ export interface Project {
 export interface CreateProjectData {
   name: string;
   description: string;
+  completed: boolean;
   github_url: string;
   live_url: string;
   technologies: string[];
@@ -52,6 +54,7 @@ export async function createProject(data: CreateProjectData): Promise<Project> {
     const projectData = {
       name: data.name,
       description: data.description,
+      completed: data.completed,
       image_url: imageUrl, // Store the actual URL, not the file ID
       github_url: data.github_url,
       live_url: data.live_url,
@@ -69,6 +72,7 @@ export async function createProject(data: CreateProjectData): Promise<Project> {
     return {
       id: project.$id,
       name: project.name,
+      completed: project.completed,
       description: project.description,
       image_url: project.image_url,
       github_url: project.github_url,
@@ -95,6 +99,7 @@ export async function getProjects(): Promise<Project[]> {
       id: doc.$id,
       name: doc.name,
       description: doc.description,
+      completed: doc.completed,
       image_url: doc.image_url,
       github_url: doc.github_url,
       live_url: doc.live_url,
@@ -122,6 +127,7 @@ export async function getProject(id: string): Promise<Project | null> {
       id: project.$id,
       name: project.name,
       description: project.description,
+      completed: project.completed,
       image_url: project.image_url,
       github_url: project.github_url,
       live_url: project.live_url,
@@ -180,6 +186,7 @@ export async function updateProject(id: string, data: Partial<CreateProjectData>
       id: updatedProject.$id,
       name: updatedProject.name,
       description: updatedProject.description,
+      completed: updatedProject.completed,
       image_url: updatedProject.image_url,
       github_url: updatedProject.github_url,
       live_url: updatedProject.live_url,

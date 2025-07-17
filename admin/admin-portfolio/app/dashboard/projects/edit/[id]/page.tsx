@@ -15,6 +15,7 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useProjects } from "@/app/context/project-context"
 import { Project, CreateProjectData } from "@/lib/project"
+import { Switch } from "@/components/ui/switch"
 
 export default function EditProjectPage() {
   const router = useRouter()
@@ -26,6 +27,7 @@ export default function EditProjectPage() {
 
   const [formData, setFormData] = useState({
     name: "",
+    completed: false,
     description: "",
     github_url: "",
     live_url: "",
@@ -46,6 +48,7 @@ export default function EditProjectPage() {
       setFormData({
         name: projectData.name,
         description: projectData.description,
+        completed: projectData.completed,
         github_url: projectData.github_url,
         live_url: projectData.live_url,
       })
@@ -104,6 +107,13 @@ export default function EditProjectPage() {
     }
   }
 
+  const handleCompletedChange = (checked: boolean) => {
+    setFormData((prev) => ({ 
+      ...prev, 
+      completed: checked,
+    }))
+  }
+
   const addTechnology = () => {
     if (newTech.trim() && !technologies.includes(newTech.trim())) {
       setTechnologies((prev) => [...prev, newTech.trim()])
@@ -130,6 +140,7 @@ export default function EditProjectPage() {
         github_url: formData.github_url,
         live_url: formData.live_url,
         technologies,
+        completed: formData.completed,
       }
 
       // Add image file if a new one was selected
@@ -275,6 +286,18 @@ export default function EditProjectPage() {
                     className="border-secondary focus:border-green"
                     disabled={saving}
                   />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="completed"
+                    checked={formData.completed}
+                    onCheckedChange={handleCompletedChange}
+                    disabled={saving}
+                  />
+                  <Label htmlFor="completed" className="text-primary">
+                    The project is complete
+                  </Label>
                 </div>
               </CardContent>
             </Card>

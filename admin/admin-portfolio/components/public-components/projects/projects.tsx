@@ -3,10 +3,11 @@
 import React from 'react'
 import { Card, CardContent } from "@/components/ui/card"
 import { useProjects } from "@/app/context/project-context"
-import { ExternalLink, Github } from "lucide-react"
+import { Clock, ExternalLink, Github } from "lucide-react"
 import Link from "next/link"
 import { Button } from '@/components/ui/button';
 import { parseTextWithFormatting } from '@/components/utils';
+import { Badge } from '@/components/ui/badge';
 
 const Projects = () => {
   const { projects, loading } = useProjects();
@@ -61,29 +62,14 @@ const Projects = () => {
                     />
                   </div>
                   
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-primary mb-1">{project.name}</h3>
-                    {/* <div className="flex gap-2">
-                      {project.github_url && (
-                        <Link 
-                          href={project.github_url} 
-                          target="_blank"
-                          className="text-primary/60 hover:text-primary transition-colors"
-                        >
-                          <Github className="h-4 w-4" />
-                        </Link>
-                      )}
-                      {project.live_url && (
-                        <Link 
-                          href={project.live_url} 
-                          target="_blank"
-                          className="text-primary/60 hover:text-primary transition-colors"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Link>
-                      )}
-                    </div> */}
-                  </div>
+                    <div className="flex justify-between mb-2 items-center">
+                        <h3 className="font-semibold text-primary mb-1">{project.name}</h3>
+                        {!project.completed && <Badge variant="secondary" className="bg-yellow-600/10 text-yellow-700 text-xs">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Incomplete
+                        </Badge>
+                        }
+                    </div>
                   
                   <p className="text-sm text-primary/70 mb-2 line-clamp-2">{parseTextWithFormatting(project.description)}</p>
                   

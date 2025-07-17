@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { FolderOpen, User, Plus, ExternalLink } from "lucide-react"
+import { FolderOpen, User, Plus, ExternalLink, Clock } from "lucide-react"
 import Link from "next/link"
 import { appwriteConfig, databases } from "@/lib/appwrite";
 import { toast } from "@/hooks/use-toast";
 import DashboardSkeleton from "@/components/skeletons/dashboard-skeleton";
 import { useProjects } from "../context/project-context";
 import { parseTextWithFormatting } from "@/components/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface Project {
   id: string
@@ -170,14 +171,21 @@ export default function DashboardPage() {
               {recentProjects.map((project) => (
                 <Card key={project.id} className="border-secondary">
                   <CardContent className="p-4">
-                    <div className="w-full h-auto mb-5 overflow-hidden rounded-sm">
+                    <div className="w-full h-auto mb-5 overflow-hidden max-h-[250px] rounded-sm">
                       <img
                         src={project.image_url || "/placeholder.svg"}
                         alt={project.name}
                         className="w-full object-cover"
                       />
                     </div>
-                    <h3 className="font-semibold text-primary mb-1">{project.name}</h3>
+                    <div className="flex justify-between mb-2 items-center">
+                      <h3 className="font-semibold text-primary mb-1">{project.name}</h3>
+                      {!project.completed && <Badge variant="secondary" className="bg-yellow-600/10 text-yellow-700 text-xs">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Incomplete
+                      </Badge>
+                      }
+                    </div>
                     <p className="text-sm text-primary/70 mb-2 line-clamp-2">{parseTextWithFormatting(project.description)}</p>
                     <div className="flex gap-2">
                       {project.technologies.slice(0, 2).map((tech) => (

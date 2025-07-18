@@ -11,10 +11,27 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, Upload, X, Plus, Save, Loader2, Calendar, MapPin, Building, ExternalLink } from "lucide-react"
+import { ArrowLeft, Upload, X, Plus, Save, Loader2, Calendar, MapPin, Building, ExternalLink, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useExperience, Experience } from "@/app/context/experience-context"
+
+// Helper function to format date for input fields
+const formatDateForInput = (dateString: string): string => {
+  if (!dateString) return ""
+  
+  try {
+    // Handle various date formats
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return ""
+    
+    // Format as YYYY-MM-DD for HTML input
+    return date.toISOString().split('T')[0]
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return ""
+  }
+}
 
 export default function EditExperiencePage() {
   const router = useRouter()
@@ -36,10 +53,18 @@ export default function EditExperiencePage() {
   })
   const [skills, setSkills] = useState<string[]>([])
   const [newSkill, setNewSkill] = useState("")
-  const [coverImageFile, setCoverImageFile] = useState<File | null>(null)
-  const [additionalImageFiles, setAdditionalImageFiles] = useState<File[]>([])
-  const [imagePreview, setImagePreview] = useState("")
+  
+  // Image handling states
+  const [existingCoverImage, setExistingCoverImage] = useState<string>("")
+  const [existingAdditionalImages, setExistingAdditionalImages] = useState<string[]>([])
+  const [newCoverImageFile, setNewCoverImageFile] = useState<File | null>(null)
+  const [newAdditionalImageFiles, setNewAdditionalImageFiles] = useState<File[]>([])
+  const [coverImagePreview, setCoverImagePreview] = useState("")
   const [additionalImagePreviews, setAdditionalImagePreviews] = useState<string[]>([])
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([])
+  const [shouldUpdateCover, setShouldUpdateCover] = useState(false)
+  const [shouldUpdateAdditional, setShouldUpdateAdditional] = useState(false)
+  
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [experience, setExperience] = useState<Experience | null>(null)
@@ -55,16 +80,22 @@ export default function EditExperiencePage() {
         company: experienceData.company,
         location: experienceData.location,
         company_url: experienceData.company_url,
-        startDate: experienceData.startDate,
-        endDate: experienceData.endDate,
+        startDate: formatDateForInput(experienceData.startDate),
+        endDate: formatDateForInput(experienceData.endDate),
         current: experienceData.current,
       })
       setSkills(experienceData.skills)
       
       // Set existing images
       if (experienceData.images.length > 0) {
-        setImagePreview(experienceData.images[0])
-        setAdditionalImagePreviews(experienceData.images.slice(1))
+        setExistingCoverImage(experienceData.images[0])
+        setCoverImagePreview(experienceData.images[0])
+        
+        if (experienceData.images.length > 1) {
+          const additionalImages = experienceData.images.slice(1)
+          setExistingAdditionalImages(additionalImages)
+          setAdditionalImagePreviews(additionalImages)
+        }
       }
     } else if (!contextLoading) {
       // Experience not found and context is not loading
@@ -115,13 +146,14 @@ export default function EditExperiencePage() {
         return
       }
 
-      setCoverImageFile(file)
+      setNewCoverImageFile(file)
+      setShouldUpdateCover(true)
       
       // Create preview
       const reader = new FileReader()
       reader.onload = (e) => {
         const result = e.target?.result as string
-        setImagePreview(result)
+        setCoverImagePreview(result)
       }
       reader.readAsDataURL(file)
     }
@@ -129,6 +161,17 @@ export default function EditExperiencePage() {
 
   const handleAdditionalImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+    
+    // Check total count (existing + new)
+    const totalCount = existingAdditionalImages.length + files.length
+    if (totalCount > 5) {
+      toast({
+        title: "Too Many Images",
+        description: `You can have a maximum of 5 additional images. Currently you have ${existingAdditionalImages.length} existing images.`,
+        variant: "destructive",
+      })
+      return
+    }
     
     // Validate files
     const validFiles = files.filter(file => {
@@ -153,21 +196,43 @@ export default function EditExperiencePage() {
       return true
     })
 
-    setAdditionalImageFiles(validFiles)
+    if (validFiles.length === 0) return
+
+    setNewAdditionalImageFiles(prev => [...prev, ...validFiles])
+    setShouldUpdateAdditional(true)
     
-    // Create previews
-    const previews: string[] = []
-    validFiles.forEach(file => {
+    // Create previews for new files
+    const newPreviews: string[] = []
+    let loadedCount = 0
+    
+    validFiles.forEach((file, index) => {
       const reader = new FileReader()
       reader.onload = (e) => {
         const result = e.target?.result as string
-        previews.push(result)
-        if (previews.length === validFiles.length) {
-          setAdditionalImagePreviews(previews)
+        newPreviews[index] = result
+        loadedCount++
+        
+        if (loadedCount === validFiles.length) {
+          // Add new previews to existing ones
+          setAdditionalImagePreviews(prev => [...prev, ...newPreviews])
         }
       }
       reader.readAsDataURL(file)
     })
+  }
+
+  const removeExistingAdditionalImage = (index: number) => {
+    const imageToRemove = existingAdditionalImages[index]
+    setExistingAdditionalImages(prev => prev.filter((_, i) => i !== index))
+    setAdditionalImagePreviews(prev => prev.filter((_, i) => i !== index))
+    setImagesToDelete(prev => [...prev, imageToRemove])
+    setShouldUpdateAdditional(true)
+  }
+
+  const removeNewAdditionalImage = (index: number) => {
+    const adjustedIndex = index - existingAdditionalImages.length
+    setNewAdditionalImageFiles(prev => prev.filter((_, i) => i !== adjustedIndex))
+    setAdditionalImagePreviews(prev => prev.filter((_, i) => i !== index))
   }
 
   const addSkill = () => {
@@ -206,8 +271,8 @@ export default function EditExperiencePage() {
       await updateExperience(
         experienceId, 
         updateData, 
-        coverImageFile || undefined, 
-        additionalImageFiles.length > 0 ? additionalImageFiles : undefined
+        shouldUpdateCover ? newCoverImageFile || undefined : undefined,
+        shouldUpdateAdditional ? newAdditionalImageFiles : undefined
       )
 
       toast({
@@ -472,10 +537,10 @@ export default function EditExperiencePage() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="border-2 border-dashed border-secondary rounded-lg p-6 text-center">
-                    {imagePreview ? (
+                    {coverImagePreview ? (
                       <div className="space-y-4">
                         <img
-                          src={imagePreview}
+                          src={coverImagePreview}
                           alt="Cover preview"
                           className="w-full h-48 object-cover rounded-lg"
                         />
@@ -532,56 +597,53 @@ export default function EditExperiencePage() {
               <CardHeader>
                 <CardTitle className="text-primary">Additional Images</CardTitle>
                 <CardDescription className="text-primary/60">
-                  Upload additional images for your experience
+                  Upload up to 5 additional images for your experience
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="border-2 border-dashed border-secondary rounded-lg p-6 text-center">
-                    {additionalImagePreviews.length > 0 ? (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-2">
-                          {additionalImagePreviews.map((preview, index) => (
+                  {/* Current Images */}
+                  {additionalImagePreviews.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-medium text-primary">Current Images ({additionalImagePreviews.length}/5)</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {additionalImagePreviews.map((preview, index) => (
+                          <div key={index} className="relative group">
                             <img
-                              key={index}
                               src={preview}
                               alt={`Additional preview ${index + 1}`}
                               className="w-full h-24 object-cover rounded"
                             />
-                          ))}
-                        </div>
-                        <div className="flex gap-2 justify-center">
-                          <Label htmlFor="additionalImages" className="cursor-pointer">
-                            <Button
+                            <button
                               type="button"
-                              variant="outline"
-                              className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
-                              asChild
+                              onClick={() => {
+                                if (index < existingAdditionalImages.length) {
+                                  removeExistingAdditionalImage(index)
+                                } else {
+                                  removeNewAdditionalImage(index)
+                                }
+                              }}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                               disabled={saving}
                             >
-                              <span>
-                                <Upload className="h-4 w-4 mr-2" />
-                                Change Images
-                              </span>
-                            </Button>
-                            <Input
-                              id="additionalImages"
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              onChange={handleAdditionalImagesUpload}
-                              className="hidden"
-                              disabled={saving}
-                            />
-                          </Label>
-                        </div>
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ) : (
+                    </div>
+                  )}
+
+                  {/* Upload Area */}
+                  {additionalImagePreviews.length < 5 && (
+                    <div className="border-2 border-dashed border-secondary rounded-lg p-6 text-center">
                       <div className="space-y-4">
                         <Upload className="h-12 w-12 text-primary/30 mx-auto" />
                         <div>
                           <Label htmlFor="additionalImages" className="cursor-pointer">
-                            <span className="text-primary hover:text-green">Click to upload additional images</span>
+                            <span className="text-primary hover:text-green">
+                              {additionalImagePreviews.length === 0 ? "Click to upload additional images" : "Add more images"}
+                            </span>
                             <Input
                               id="additionalImages"
                               type="file"
@@ -592,11 +654,13 @@ export default function EditExperiencePage() {
                               disabled={saving}
                             />
                           </Label>
-                          <p className="text-sm text-primary/60 mt-1">PNG, JPG, GIF up to 10MB each</p>
+                          <p className="text-sm text-primary/60 mt-1">
+                            PNG, JPG, GIF up to 10MB each ({5 - additionalImagePreviews.length} remaining)
+                          </p>
                         </div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -608,9 +672,9 @@ export default function EditExperiencePage() {
               </CardHeader>
               <CardContent>
                 <div className="border border-secondary rounded-lg p-4 space-y-3">
-                  {imagePreview && (
+                  {coverImagePreview && (
                     <img
-                      src={imagePreview}
+                      src={coverImagePreview}
                       alt="Preview"
                       className="w-full h-32 object-cover rounded"
                     />

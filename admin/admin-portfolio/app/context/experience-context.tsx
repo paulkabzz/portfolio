@@ -195,27 +195,38 @@ export const ExperienceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         throw new Error('Experience not found')
       }
 
-      let imageUrls = existingExperience.images
+      let imageUrls = [...existingExperience.images] // Copy existing images
+      let imagesToDelete: string[] = []
 
-      // If new images are provided, replace all existing images
-      if (coverImage || (additionalImages && additionalImages.length > 0)) {
-        // Delete old images
+      // Handle cover image update
+      if (coverImage) {
+        // If there's an existing cover image, mark it for deletion
         if (existingExperience.images.length > 0) {
-          await deleteImages(existingExperience.images)
+          imagesToDelete.push(existingExperience.images[0])
+          imageUrls = imageUrls.slice(1) // Remove the old cover image
         }
         
-        // Upload new images
-        imageUrls = []
-        
-        if (coverImage) {
-          const coverImageUrl = await uploadImageAndGetUrl(coverImage)
-          imageUrls.push(coverImageUrl)
+        // Upload new cover image
+        const coverImageUrl = await uploadImageAndGetUrl(coverImage)
+        imageUrls.unshift(coverImageUrl) // Add as first image (cover)
+      }
+      
+      // Handle additional images update
+      if (additionalImages && additionalImages.length > 0) {
+        // Delete existing additional images (keep cover image)
+        if (existingExperience.images.length > 1) {
+          imagesToDelete.push(...existingExperience.images.slice(1))
+          imageUrls = imageUrls.slice(0, 1) // Keep only cover image
         }
         
-        if (additionalImages && additionalImages.length > 0) {
-          const additionalImageUrls = await uploadImages(additionalImages)
-          imageUrls.push(...additionalImageUrls)
-        }
+        // Upload new additional images
+        const additionalImageUrls = await uploadImages(additionalImages)
+        imageUrls.push(...additionalImageUrls)
+      }
+
+      // Delete old images that are being replaced
+      if (imagesToDelete.length > 0) {
+        await deleteImages(imagesToDelete)
       }
 
       const updateData: any = {

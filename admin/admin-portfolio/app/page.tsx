@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { PersonalInfo } from "./dashboard/page";
 import About from "@/components/public-components/about/about";
 import Projects from "@/components/public-components/projects/projects";
+import Experience from "@/components/public-components/experience/experience";
 
 export default function Home() {
 
@@ -100,6 +101,7 @@ export default function Home() {
         <Hero headline={personalInfo?.headline ?? `Hello, I'm ${personalInfo?.name}`} name={personalInfo?.name || "Name"} avatar_url={personalInfo?.image_url || "/github.png"} occupation={personalInfo?.role ?? "Student"} github={personalInfo?.github} linkedin={personalInfo?.linkedin} />
         { personalInfo?.about && <About img={personalInfo.about_image_url} about={personalInfo?.about} /> }
         <Projects />
+        <Experience />
     </div>
   );
 }

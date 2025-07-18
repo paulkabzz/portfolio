@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export const parseTextWithFormatting = (text: string) => {
     // Recursive function to handle nested formatting
     const parseRecursive = (input: string): React.ReactNode[] => {
@@ -30,7 +32,7 @@ export const parseTextWithFormatting = (text: string) => {
                     const text = linkContent.slice(colonIndex + 2).trim(); // Remove ": and trim
                     
                     return (
-                        <a 
+                        <Link
                             key={index} 
                             href={url} 
                             target="_blank" 
@@ -38,7 +40,7 @@ export const parseTextWithFormatting = (text: string) => {
                             className="text-blue-600 hover:text-blue-800 underline"
                         >
                             {parseRecursive(text)}
-                        </a>
+                        </Link>
                     );
                 }
                 // If link format is invalid, return as plain text

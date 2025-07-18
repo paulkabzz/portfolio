@@ -41,7 +41,7 @@ const Projects = () => {
   }
 
   return (
-    <section className="py-12 px-4 max-w-7xl mx-auto">
+    <section className="py-12 px-4 max-w-7xl mx-auto" id='projects'>
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center mb-16">
@@ -88,7 +88,7 @@ const Projects = () => {
 
                   <div>
                     <div className='flex w-full relative flex-col gap-5 mt-5'>
-                        <Button className='w-full'>
+                        <Button className='w-full' disabled={!project.github_url}>
                             <Link href={project.github_url} className='w-full h-full' target='_blank'>Code</Link>
                         </Button>
                         <Button className='w-full' disabled={!project.live_url}>

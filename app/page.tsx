@@ -12,6 +12,7 @@ import AboutSkeleton from "@/components/public-components/about/about-skeleton";
 import Projects from "@/components/public-components/projects/projects";
 import Experience from "@/components/public-components/experience/experience";
 import Contact from "@/components/public-components/contact/contact";
+import Footer from "@/components/public-components/footer/footer";
 
 export default function Home() {
 
@@ -111,6 +112,7 @@ export default function Home() {
         <Projects />
         <Experience />
         <Contact location={personalInfo?.location} email={personalInfo?.email} phone={personalInfo?.phone}/>
+        <Footer name={personalInfo?.name} surname={personalInfo?.surname} />
     </div>
   );
 }

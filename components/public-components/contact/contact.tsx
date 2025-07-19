@@ -10,6 +10,7 @@ import { Send, Loader2, Mail, MessageSquare, Phone, MapPin, Clock } from "lucide
 import { Switch } from "@/components/ui/switch"
 import { PersonalInfo } from "@/app/dashboard/page"
 import { useToast } from "@/hooks/use-toast"
+import Link from "next/link"
 
 
 const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  => {
@@ -19,6 +20,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: "",
     urgent: false,
@@ -55,6 +57,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
       setFormData({
         name: "",
         email: "",
+        phone: "",
         subject: "",
         message: "",
         urgent: false,
@@ -74,7 +77,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                      formData.message.trim()
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6" id="contact">
+    <div className="max-w-4xl mx-auto p-6 !py-12 space-y-6" id="contact">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-2xl lg:text-2xl font-bold text-[#131313] mb-0">Contact Me</h2>
           <div className="w-24 h-1 bg-[#059669] mx-auto rounded-full"></div>
@@ -125,6 +128,22 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                 />
               </div>
 
+              <div>
+                <Label htmlFor="phone" className="text-primary">
+                 Phone
+                </Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="+27 67 123 4567"
+                  className="border-secondary focus:border-green"
+                  required
+                  disabled={submitting}
+                />
+              </div>
               <div>
                 <Label htmlFor="subject" className="text-primary">
                   Subject *
@@ -179,6 +198,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                   onClick={() => setFormData({
                     name: "",
                     email: "",
+                    phone: "",
                     subject: "",
                     message: "",
                     urgent: false,
@@ -221,7 +241,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                 <Mail className="h-5 w-5 text-green mt-0.5" />
                 <div>
                   <p className="text-primary font-medium text-sm">Email</p>
-                  <p className="text-primary/70 text-[12px]">{ email }</p>
+                  <Link href={`mailto:${email}`} className="text-primary/70 text-[12px] hover:text-green">{ email }</Link>
                 </div>
               </div>
               

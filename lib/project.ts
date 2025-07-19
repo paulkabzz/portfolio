@@ -233,8 +233,6 @@ export async function deleteProject(id: string): Promise<void> {
 // Helper function to extract file ID from Appwrite storage URL
 function extractFileIdFromUrl(url: string): string | null {
   try {
-    // This will depend on your Appwrite URL structure
-    // Typical Appwrite storage URL: https://cloud.appwrite.io/v1/storage/buckets/[BUCKET_ID]/files/[FILE_ID]/view
     const urlParts = url.split('/');
     const fileIndex = urlParts.findIndex(part => part === 'files');
     if (fileIndex !== -1 && urlParts[fileIndex + 1]) {

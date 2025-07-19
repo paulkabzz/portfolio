@@ -11,6 +11,7 @@ import About from "@/components/public-components/about/about";
 import AboutSkeleton from "@/components/public-components/about/about-skeleton"; // Import About skeleton
 import Projects from "@/components/public-components/projects/projects";
 import Experience from "@/components/public-components/experience/experience";
+import Contact from "@/components/public-components/contact/contact";
 
 export default function Home() {
 
@@ -79,7 +80,7 @@ export default function Home() {
     },
     {
         label: "Contact",
-        href: "/contact"
+        href: "#contact"
     }
   ];
 
@@ -109,6 +110,7 @@ export default function Home() {
         )}
         <Projects />
         <Experience />
+        <Contact location={personalInfo?.location} email={personalInfo?.email} phone={personalInfo?.phone}/>
     </div>
   );
 }

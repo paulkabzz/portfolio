@@ -6,7 +6,6 @@ interface ProjectContextType {
   loading: boolean;
   error: string | null;
   
-  // Actions
   fetchProjects: () => Promise<void>;
   addProject: (data: CreateProjectData) => Promise<Project>;
   editProject: (id: string, data: Partial<CreateProjectData>) => Promise<Project>;
@@ -127,7 +126,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   );
 };
 
-// Custom hook to use the project context
 export const useProjects = (): ProjectContextType => {
   const context = useContext(ProjectContext);
   if (context === undefined) {
@@ -136,5 +134,4 @@ export const useProjects = (): ProjectContextType => {
   return context;
 };
 
-// Export the context for advanced usage
 export { ProjectContext };

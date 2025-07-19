@@ -1,18 +1,20 @@
 "use client";
 
 import Hero from "@/components/public-components/home/hero";
+import HeroSkeleton from "@/components/public-components/home/hero-skeleton"; // Import the skeleton
 import NavBar, { NavLink } from "@/components/public-components/navbar/navbar";
 import { toast } from "@/hooks/use-toast";
 import { appwriteConfig, databases } from "@/lib/appwrite";
 import { useEffect, useState } from "react";
 import { PersonalInfo } from "./dashboard/page";
 import About from "@/components/public-components/about/about";
+import AboutSkeleton from "@/components/public-components/about/about-skeleton"; // Import About skeleton
 import Projects from "@/components/public-components/projects/projects";
 import Experience from "@/components/public-components/experience/experience";
 
 export default function Home() {
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Set initial loading to true
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo | null>();
 
   useEffect(() => {
@@ -54,24 +56,9 @@ export default function Home() {
         variant: "destructive",
       })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false) // Set loading to false when done
     }
   }
-
-  if (isLoading) return (
-    <div className="min-h-60  h-screen w-full flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl">
-    <div className="flex flex-auto flex-col justify-center items-center p-4 md:p-5">
-      <div className="flex justify-center">
-        <div className="animate-spin inline-block size-6 border-3 border-current border-t-transparent text-green rounded-full" role="status" aria-label="loading">
-          <span className="sr-only"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-  )
-
-  console.log(personalInfo);
-
 
   const links: NavLink[] = [
     {
@@ -94,12 +81,32 @@ export default function Home() {
         label: "Contact",
         href: "/contact"
     }
-    ];
+  ];
+
   return (
     <div className="">
         <NavBar links={links} name={personalInfo?.name || "Name"}/>
-        <Hero headline={personalInfo?.headline ?? `Hello, I'm ${personalInfo?.name}`} name={personalInfo?.name || "Name"} avatar_url={personalInfo?.image_url || "/github.png"} occupation={personalInfo?.role ?? "Student"} github={personalInfo?.github} linkedin={personalInfo?.linkedin} />
-        { personalInfo?.about && <About img={personalInfo.about_image_url} about={personalInfo?.about} /> }
+        
+        {/* Conditionally render Hero or HeroSkeleton based on loading state */}
+        {isLoading ? (
+          <HeroSkeleton />
+        ) : (
+          <Hero 
+            headline={personalInfo?.headline ?? `Hello, I'm ${personalInfo?.name}`} 
+            name={personalInfo?.name || "Name"} 
+            avatar_url={personalInfo?.image_url || "/github.png"} 
+            occupation={personalInfo?.role ?? "Student"} 
+            github={personalInfo?.github} 
+            linkedin={personalInfo?.linkedin} 
+          />
+        )}
+        
+        {/* Conditionally render About or AboutSkeleton based on loading state and data */}
+        {isLoading ? (
+          <AboutSkeleton />
+        ) : (
+          personalInfo?.about && <About img={personalInfo.about_image_url} about={personalInfo?.about} />
+        )}
         <Projects />
         <Experience />
     </div>

@@ -72,7 +72,7 @@ const Projects = () => {
             {projects.map((project) => (
               <Card key={project.id} className="border-secondary">
                 <CardContent className="p-4">
-                  <div className="w-full h-auto max-h-[250px] mb-5 overflow-hidden rounded-sm">
+                  <div className="w-full h-auto max-h-[290px] mb-5 overflow-hidden rounded-sm">
                     <img
                       src={project.image_url || "/placeholder.svg"}
                       alt={project.name}

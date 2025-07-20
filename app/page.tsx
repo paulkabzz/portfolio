@@ -71,10 +71,10 @@ export default function Home() {
         label: "Projects",
         href: "#projects"
     },
-    {
-        label: "Education",
-        href: "#education"
-    },
+    // {
+    //     label: "Education",
+    //     href: "#education"
+    // },
     {
         label: "Experience",
         href: "#experience"
@@ -112,7 +112,7 @@ export default function Home() {
         <Projects />
         <Experience />
         <Contact location={personalInfo?.location} email={personalInfo?.email} phone={personalInfo?.phone}/>
-        <Footer name={personalInfo?.name} surname={personalInfo?.surname} />
+        <Footer name={personalInfo?.name} surname={personalInfo?.surname} github={personalInfo?.github} />
     </div>
   );
 }

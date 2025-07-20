@@ -1,3 +1,4 @@
+
 # Portfolio Website Template
 
 This project is a personal portfolio website built with Next.js, designed to showcase your projects and work experience with an integrated admin dashboard for easy content management. It's bootstrapped with `create-next-app` and uses Appwrite as a backend for data storage and authentication.
@@ -39,9 +40,8 @@ Follow these steps to get your portfolio website up and running:
 ### 1\. Clone the repository
 
 ```bash
-git clone <repository-url>
-cd paulkabzz/portfolio/paulkabzz-portfolio-51ca16c2d80da4a42169aa489cb5d522b8c60cb3
-```
+git clone [https://github.com/paulkabzz/portfolio](https://github.com/paulkabzz/portfolio) .
+````
 
 ### 2\. Install dependencies
 
@@ -61,7 +61,7 @@ Create a `.env.local` file in the root of your project and add the following env
 
 ```
 NEXT_PUBLIC_APPWRITE_PROJECT_ID=your_appwrite_project_id
-NEXT_PUBLIC_APPWRITE_URL=https://cloud.appwrite.io/v1 # or your custom Appwrite endpoint
+NEXT_PUBLIC_APPWRITE_URL=[https://cloud.appwrite.io/v1](https://cloud.appwrite.io/v1) # or your custom Appwrite endpoint
 NEXT_PUBLIC_APPWRITE_DATBASE_ID=your_database_id
 NEXT_PUBLIC_APPWRITE_USER_IMG_STORAGE_ID=your_user_image_storage_id
 NEXT_PUBLIC_APPWRITE_USER_COLLECTION_ID=your_user_collection_id
@@ -70,9 +70,25 @@ NEXT_PUBLIC_APPWRITE_PROJECT_COVER_STORAGE_ID=your_project_cover_storage_id
 NEXT_PUBLIC_APPWRITE_PROJECT_COLLECTION_ID=your_project_collection_id
 NEXT_PUBLIC_APPWRITE_EXPERIENCE_STORAGE_ID=your_experience_storage_id
 NEXT_PUBLIC_APPWRITE_EXPERINCE_COLLECTION_ID=your_experience_collection_id
+NEXT_PUBLIC_APPWRITE_MESSAGES_COLLECTION_ID=your_messages_collection_id
 ```
 
 **Note**: You will need to set up your Appwrite project, create a database, and define collections and storage buckets as per the variables above. Ensure you configure appropriate read/write permissions for your collections and buckets.
+
+**How to find these values in your Appwrite Console:**
+
+  * **Project ID (`NEXT_PUBLIC_APPWRITE_PROJECT_ID`)**: Navigate to your Appwrite project. The Project ID can be found on the **Overview** page under "Project ID".
+  * **Appwrite URL (`NEXT_PUBLIC_APPWRITE_URL`)**: This is typically `https://cloud.appwrite.io/v1` for Appwrite Cloud. If you're self-hosting, it will be your custom Appwrite endpoint.
+  * **Database ID (`NEXT_PUBLIC_APPWRITE_DATBASE_ID`)**: In your Appwrite project, go to **Databases**. Create a new database if you don't have one, then click on it. The Database ID will be displayed at the top.
+  * **Collection IDs (`NEXT_PUBLIC_APPWRITE_USER_COLLECTION_ID`, `NEXT_PUBLIC_APPWRITE_PROJECT_COLLECTION_ID`, `NEXT_PUBLIC_APPWRITE_EXPERINCE_COLLECTION_ID`, `NEXT_PUBLIC_APPWRITE_MESSAGES_COLLECTION_ID`)**: Within your chosen database, go to **Collections**. Create the necessary collections (e.g., `users`, `projects`, `experiences`, `messages`). The Collection ID for each will be visible when you select it.
+  * **Storage IDs (`NEXT_PUBLIC_APPWRITE_USER_IMG_STORAGE_ID`, `NEXT_PUBLIC_APPWRITE_PROJECT_COVER_STORAGE_ID`, `NEXT_PUBLIC_APPWRITE_EXPERIENCE_STORAGE_ID`)**: In your Appwrite project, go to **Storage**. Create the necessary buckets (e.g., `user_images`, `project_covers`, `experience_images`). The Bucket ID for each will be visible when you select it.
+  * **User Document ID (`NEXT_PUBLIC_APPWRITE_USER_DOCUMENT_ID`)**: After creating your `users` collection and logging into your dashboard for the first time (which will create a user document), or by manually creating a document for your personal info within the `users` collection, you can find its Document ID by clicking on the document itself. This is typically a unique ID for your single user profile document.
+
+### **Appwrite & GitHub Student Developer Pack**
+
+If you are a student, you can significantly enhance your Appwrite experience by applying for the **GitHub Student Developer Pack**. This pack often includes credits for Appwrite Cloud, which can provide higher usage limits, more storage, and other benefits, allowing you to build and deploy your portfolio without worrying about resource constraints.
+
+To learn more and apply, visit the GitHub Student Developer Pack website.
 
 ### 4\. Run the development server
 
@@ -87,7 +103,7 @@ bun dev
 ```
 
 Open [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000) with your browser to see the public-facing portfolio.
-To access the admin dashboard, navigate to [http://localhost:3000/login](https://www.google.com/search?q=http://localhost:3000/login) and log in with your Appwrite user credentials.
+To access the admin dashboard, navigate to [http://localhost:3000/login](https://www.google.com/search?q=http://localhost.com/login) and log in with your Appwrite user credentials.
 
 ### 5\. Build for production
 
@@ -143,3 +159,4 @@ To learn more about Next.js, take a look at the following resources:
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome\!
 
 Email: pkbalu05@gmail.com
+

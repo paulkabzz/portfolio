@@ -43,7 +43,7 @@ export default function ArchivedMessagesPage() {
   // Only fetch on component mount
   useEffect(() => {
     fetchArchivedMessages();
-  }, []); // Removed fetchArchivedMessages from dependency array
+  }, []);
 
   const formatRelativeDate = (dateString: string) => {
     const date = new Date(dateString);

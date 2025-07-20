@@ -1,4 +1,3 @@
-// contexts/AuthContext.tsx
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Models } from 'appwrite';
 import { account } from '@/lib/appwrite';

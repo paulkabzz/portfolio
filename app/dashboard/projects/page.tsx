@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,18 +20,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useProjects } from "@/app/context/project-context"
 import { parseTextWithFormatting } from "@/components/utils"
-
-interface Project {
-  id: string
-  name: string
-  description: string
-  image: string
-  githubUrl: string
-  liveUrl: string
-  technologies: string[]
-  createdAt: string
-}
-
 export default function ProjectsPage() {
   const { projects, loading } = useProjects();
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,7 +36,7 @@ export default function ProjectsPage() {
     localStorage.setItem("portfolio-projects", JSON.stringify(updatedProjects));
   }
 
-  if (loading) return <div>Loading..</div>
+  if (loading) return <div>Loading..</div>;
 
   return (
     <div className="space-y-6">

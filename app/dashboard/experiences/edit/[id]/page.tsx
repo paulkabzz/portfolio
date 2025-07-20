@@ -55,13 +55,13 @@ export default function EditExperiencePage() {
   const [newSkill, setNewSkill] = useState("")
   
   // Image handling states
-  const [existingCoverImage, setExistingCoverImage] = useState<string>("")
+  const [_existingCoverImage, setExistingCoverImage] = useState<string>("")
   const [existingAdditionalImages, setExistingAdditionalImages] = useState<string[]>([])
   const [newCoverImageFile, setNewCoverImageFile] = useState<File | null>(null)
   const [newAdditionalImageFiles, setNewAdditionalImageFiles] = useState<File[]>([])
   const [coverImagePreview, setCoverImagePreview] = useState("")
   const [additionalImagePreviews, setAdditionalImagePreviews] = useState<string[]>([])
-  const [imagesToDelete, setImagesToDelete] = useState<string[]>([])
+  const [_imagesToDelete, setImagesToDelete] = useState<string[]>([])
   const [shouldUpdateCover, setShouldUpdateCover] = useState(false)
   const [shouldUpdateAdditional, setShouldUpdateAdditional] = useState(false)
   
@@ -491,7 +491,7 @@ export default function EditExperiencePage() {
                     onChange={(e) => setNewSkill(e.target.value)}
                     placeholder="e.g., JavaScript, Project Management, Leadership"
                     className="border-secondary focus:border-green"
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
                     disabled={saving}
                   />
                   <Button 

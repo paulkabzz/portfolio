@@ -163,8 +163,7 @@ export async function updateProject(id: string, data: Partial<CreateProjectData>
       // Extract file ID from old URL to delete the old image
       if (existingProject?.image_url) {
         try {
-          // Extract file ID from URL - this assumes the URL structure
-          // You might need to adjust this based on your URL structure
+          // Extract file ID from URL
           const oldImageId = extractFileIdFromUrl(existingProject.image_url);
           if (oldImageId) {
             await storage.deleteFile(appwriteConfig.projectCoverStorageId!, oldImageId);

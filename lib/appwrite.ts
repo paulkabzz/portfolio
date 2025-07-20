@@ -1,4 +1,3 @@
-// lib/appwrite/config.ts
 import { Client, Account, Databases, Storage } from 'appwrite';
 
 export const appwriteConfig = {

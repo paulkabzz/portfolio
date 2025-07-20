@@ -166,7 +166,7 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
         [
           Query.equal('archived', true),
           Query.orderDesc('$createdAt'),
-          Query.limit(100) // Adjust as needed
+          Query.limit(100)
         ]
       )
 

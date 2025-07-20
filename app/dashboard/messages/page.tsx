@@ -16,11 +16,10 @@ import {
   Clock,
   User,
   ArrowUpDown,
-  Loader2,
   RefreshCw,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useMessages, Message } from "@/app/context/messages-context";
+import { useMessages } from "@/app/context/messages-context";
 import { useRouter } from "next/navigation";
 import MessagesLoadingSkeleton from "@/components/skeletons/message-skeleton";
 
@@ -69,7 +68,7 @@ export default function MessagesPage() {
   const [filterUrgent, setFilterUrgent] = useState(false);
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [lastFetchTime, setLastFetchTime] = useState<number | null>(null);
+  const [_lastFetchTime, setLastFetchTime] = useState<number | null>(null);
   
   // Use ref to track if component is mounted
   const isMountedRef = useRef(true);
@@ -78,7 +77,7 @@ export default function MessagesPage() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Change to 5 minutes (5 * 60 * 1000 = 300,000 ms)
-  const FETCH_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
+  const FETCH_INTERVAL = 5 * 60 * 1000;
   const LAST_FETCH_KEY = 'messages_last_fetch';
 
   // Stable function using useCallback
@@ -130,9 +129,9 @@ export default function MessagesPage() {
     }
   }, [fetchAllMessages, toast, LAST_FETCH_KEY]);
 
-  // Initialize and set up periodic fetching
+  // Initialise and set up periodic fetching
   useEffect(() => {
-    // Initialize lastFetchTime from localStorage
+    // Initialise lastFetchTime from localStorage
     const lastFetch = localStorage.getItem(LAST_FETCH_KEY);
     if (lastFetch) {
       setLastFetchTime(parseInt(lastFetch));

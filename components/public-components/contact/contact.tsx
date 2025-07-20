@@ -72,7 +72,6 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone }) =>
     } catch (error) {
       console.error('Error submitting message:', error)
       
-      // Show error toast
       toast({
         title: "Failed to Send Message",
         description: "Please try again later or contact me directly via email.",
@@ -179,7 +178,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone }) =>
                   name="message"
                   value={formData.message}
                   onChange={handleInputChange}
-                  placeholder="Tell me about your project, timeline, budget, or any specific requirements you have in mind..."
+                  placeholder="Write your message here..."
                   rows={6}
                   className="border-secondary focus:border-green resize-none"
                   required

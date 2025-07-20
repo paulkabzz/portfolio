@@ -1,10 +1,10 @@
 "use client";
 
-import React from 'react'
-import { Card, CardContent } from "@/components/ui/card"
-import { useProjects } from "@/app/context/project-context"
-import { Clock, ExternalLink, Github } from "lucide-react"
-import Link from "next/link"
+import React from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { useProjects } from "@/app/context/project-context";
+import { Clock, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { parseTextWithFormatting } from '@/components/utils';
 import { Badge } from '@/components/ui/badge';

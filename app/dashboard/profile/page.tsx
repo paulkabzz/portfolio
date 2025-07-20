@@ -162,7 +162,7 @@ export default function ProfilePage() {
       const existingImageUrl = isAboutImage ? formData.about_image_url : formData.image_url
       if (existingImageUrl) {
         try {
-          // Extract file ID from URL if it's an Appwrite URL
+          // Extrct file ID from URL if it's an Appwrite URL
           const urlParts = existingImageUrl.split('/')
           const fileId = urlParts[urlParts.length - 2] // Usually the second to last part
           await storage.deleteFile(appwriteConfig.userImageStorage!, fileId)
@@ -254,7 +254,7 @@ export default function ProfilePage() {
         return
       }
 
-      console.log("Updating fields:", changedFields) // For debugging
+      // console.log("Updating fields:", changedFields) // For debugging
 
       // Update only changed fields in Appwrite
       await databases.updateDocument(

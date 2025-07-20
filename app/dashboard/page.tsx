@@ -12,17 +12,6 @@ import { useProjects } from "../context/project-context";
 import { parseTextWithFormatting } from "@/components/utils";
 import { Badge } from "@/components/ui/badge";
 
-interface Project {
-  id: string
-  name: string
-  description: string
-  image_url: string
-  github_url: string
-  live_url: string
-  technologies: string[]
-  createdAt: string
-}
-
 export interface PersonalInfo {
   name: string
   surname: string

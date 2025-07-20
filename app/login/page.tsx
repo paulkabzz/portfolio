@@ -20,7 +20,7 @@ const Login: React.FC = (): React.ReactElement => {
     
     try {
       await login(email, password);
-      router.push('/dashboard'); // This will work with App Router
+      router.push('/dashboard');
     } catch (error: any) {
       setError(error.message || 'Login failed. Please check your credentials.');
     } finally {

@@ -1,11 +1,10 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-// Skeleton component for loading states
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 const Skeleton = ({ className = "", ...props }) => (
   <div
     className={`animate-pulse rounded-md bg-gray-200 ${className}`}
     {...props}
   />
-)
+);
 
 export default function DashboardSkeleton() {
   return (

@@ -51,7 +51,7 @@ export default function MessageDetailPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [hasInitiallyFetched, setHasInitiallyFetched] = useState(false)
 
-  // Memoize all messages to prevent unnecessary re-renders
+  // Memoise all messages to prevent unnecessary re-renders
   const allMessages = useMemo(() => [...messages, ...archivedMessages], [messages, archivedMessages])
 
   // Check if message exists in current context first

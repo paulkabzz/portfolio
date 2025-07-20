@@ -25,6 +25,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { useMessages } from "@/app/context/messages-context"
+import MessageDetailSkeleton from "@/components/skeletons/message-detail-skeleton"
 
 export default function MessageDetailPage() {
   const router = useRouter()
@@ -221,14 +222,7 @@ export default function MessageDetailPage() {
   }, [message])
 
   if (loading || contextLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex items-center gap-2 text-primary">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          Loading message...
-        </div>
-      </div>
-    )
+    return <MessageDetailSkeleton />
   }
 
   if (contextError) {
@@ -385,7 +379,7 @@ export default function MessageDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none">
-                <div className="text-primary/80 leading-relaxed whitespace-pre-wrap">{message.message}</div>
+                <div className="text-primary/80 leading-relaxed whitespace-pre-wrap text-[12px]">{message.message}</div>
               </div>
             </CardContent>
           </Card>

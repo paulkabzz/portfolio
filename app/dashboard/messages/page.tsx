@@ -22,6 +22,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useMessages, Message } from "@/app/context/messages-context";
 import { useRouter } from "next/navigation";
+import MessagesLoadingSkeleton from "@/components/skeletons/message-skeleton";
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -224,14 +225,7 @@ export default function MessagesPage() {
 
   if (loading && messages.length === 0) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="flex items-center gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-green" />
-            <span className="text-lg text-primary">Loading messages...</span>
-          </div>
-        </div>
-      </div>
+      <MessagesLoadingSkeleton />
     );
   }
 
@@ -277,15 +271,17 @@ export default function MessagesPage() {
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <Button className="bg-green hover:bg-green/90" onClick={() => router.push('/dashboard/messages/archived')}>
+                Archived
+              </Button>
               <Button
                 variant={filterUnread ? "default" : "outline"}
-                size="sm"
                 onClick={() => setFilterUnread(!filterUnread)}
                 className={
                   filterUnread
                     ? "bg-green hover:bg-green/90 text-white"
-                    : "border-secondary text-primary hover:bg-secondary/50 bg-transparent"
+                    : "border-[#bbb] text-primary hover:bg-secondary/50 bg-transparent"
                 }
               >
                 <Filter className="h-4 w-4 mr-2" />
@@ -293,12 +289,11 @@ export default function MessagesPage() {
               </Button>
               <Button
                 variant={filterUrgent ? "default" : "outline"}
-                size="sm"
                 onClick={() => setFilterUrgent(!filterUrgent)}
                 className={
                   filterUrgent
                     ? "bg-red-500 hover:bg-red-500/90 text-white"
-                    : "border-secondary text-primary hover:bg-secondary/50 bg-transparent"
+                    : "border-[#bbb] text-primary hover:bg-secondary/50 bg-transparent"
                 }
               >
                 <AlertCircle className="h-4 w-4 mr-2" />
@@ -306,7 +301,6 @@ export default function MessagesPage() {
               </Button>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => {
                   if (sortBy === "date") {
                     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -315,17 +309,16 @@ export default function MessagesPage() {
                     setSortOrder("desc");
                   }
                 }}
-                className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
+                className="border-[#bbb] text-primary hover:bg-secondary/50 bg-transparent"
               >
                 <ArrowUpDown className="h-4 w-4 mr-2" />
                 {sortBy === "date" ? "Date" : "Name"}
               </Button>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={handleRefresh}
                 disabled={loading}
-                className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
+                className="border-[#bbb] text-primary hover:bg-secondary/50 bg-transparent"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -355,13 +348,13 @@ export default function MessagesPage() {
           filteredAndSortedMessages.map((message) => (
             <Card
               key={message.$id}
-              className={`border-secondary transition-all hover:shadow-md cursor-pointer ${
-                !message.read ? "bg-green/5 border-green/20" : ""
+              className={`border-secondary transition-all hover:bg-green/5 cursor-pointer ${
+                !message.read ? "bg-green/8 border-green/20" : ""
               }`}
               onClick={() => handleMessageClicked(message.$id)}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-4">
+              <CardHeader >
+                <div className="flex items-start justify-between gap-0">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <User className="h-4 w-4 text-primary/60 flex-shrink-0" />
@@ -388,7 +381,7 @@ export default function MessagesPage() {
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="space-y-4">
-                  <p className="text-primary/80 leading-relaxed line-clamp-3">{message.message}</p>
+                  <p className="text-primary/80 leading-relaxed line-clamp-3 text-[12px]">{message.message}</p>
 
                   <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-secondary">
                     <div className="flex items-center gap-2 text-sm text-primary/60">

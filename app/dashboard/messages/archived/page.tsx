@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMessages, Message } from "@/app/context/messages-context";
+import ArchivedMessagesSkeleton from "@/components/skeletons/archive-messages-skeleton";
 
 export default function ArchivedMessagesPage() {
   const { toast } = useToast();
@@ -203,12 +204,7 @@ export default function ArchivedMessagesPage() {
 
       {/* Loading State */}
       {loading && (
-        <Card className="border-secondary">
-          <CardContent className="p-8 text-center">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-primary/60">Loading archived messages...</p>
-          </CardContent>
-        </Card>
+        <ArchivedMessagesSkeleton />
       )}
 
       {/* Archived Messages List */}

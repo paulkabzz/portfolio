@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react'
 import { databases, appwriteConfig } from '@/lib/appwrite'
 import { AppwriteException, ID, Query } from 'appwrite'
 
@@ -72,7 +72,7 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     throw error
   }
 
-  const submitMessage = async (data: CreateMessageData): Promise<Message> => {
+  const submitMessage = useCallback(async (data: CreateMessageData): Promise<Message> => {
     setLoading(true)
     setError(null)
     
@@ -103,9 +103,9 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const fetchMessageById = async (id: string): Promise<Message | null> => {
+  const fetchMessageById = useCallback(async (id: string): Promise<Message | null> => {
     setLoading(true)
     setError(null)
     
@@ -126,9 +126,9 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const fetchAllMessages = async (): Promise<Message[]> => {
+  const fetchAllMessages = useCallback(async (): Promise<Message[]> => {
     setLoading(true)
     setError(null)
     
@@ -153,9 +153,9 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const fetchArchivedMessages = async (): Promise<Message[]> => {
+  const fetchArchivedMessages = useCallback(async (): Promise<Message[]> => {
     setLoading(true)
     setError(null)
     
@@ -180,9 +180,9 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const deleteMessage = async (id: string): Promise<void> => {
+  const deleteMessage = useCallback(async (id: string): Promise<void> => {
     setLoading(true)
     setError(null)
     
@@ -201,9 +201,9 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const archiveMessage = async (id: string): Promise<void> => {
+  const archiveMessage = useCallback(async (id: string): Promise<void> => {
     setLoading(true)
     setError(null)
     
@@ -225,9 +225,9 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const unarchiveMessage = async (id: string): Promise<void> => {
+  const unarchiveMessage = useCallback(async (id: string): Promise<void> => {
     setLoading(true)
     setError(null)
     
@@ -249,9 +249,9 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const markAsRead = async (id: string): Promise<void> => {
+  const markAsRead = useCallback(async (id: string): Promise<void> => {
     setLoading(true)
     setError(null)
     
@@ -277,9 +277,9 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const markAsUnread = async (id: string): Promise<void> => {
+  const markAsUnread = useCallback(async (id: string): Promise<void> => {
     setLoading(true)
     setError(null)
     
@@ -305,9 +305,9 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const openMessage = async (id: string): Promise<Message | null> => {
+  const openMessage = useCallback(async (id: string): Promise<Message | null> => {
     setLoading(true)
     setError(null)
     
@@ -330,7 +330,7 @@ export const MessagesProvider: React.FC<MessagesProviderProps> = ({ children }) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [fetchMessageById, markAsRead])
 
   const contextValue: MessagesContextType = {
     // State

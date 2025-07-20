@@ -39,9 +39,10 @@ export default function ArchivedMessagesPage() {
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
+  // Only fetch on component mount
   useEffect(() => {
     fetchArchivedMessages();
-  }, [fetchArchivedMessages]);
+  }, []); // Removed fetchArchivedMessages from dependency array
 
   const formatRelativeDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -228,7 +229,10 @@ export default function ArchivedMessagesPage() {
               <Card key={message.$id} className="border-secondary bg-gray-50/50">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
+                    <Link 
+                      href={`/dashboard/messages/${message.$id}`}
+                      className="flex-1 min-w-0 cursor-pointer hover:bg-gray-100/50 rounded-lg p-2 -m-2 transition-colors"
+                    >
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="font-semibold text-primary truncate">{message.full_name}</h3>
                         <Badge className="bg-gray-100 text-gray-600 flex items-center gap-1">
@@ -264,7 +268,7 @@ export default function ArchivedMessagesPage() {
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     <div className="flex items-center gap-2">
                       <Link href={`/dashboard/messages/${message.$id}`}>

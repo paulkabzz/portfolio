@@ -1,14 +1,14 @@
 "use client";
 
 import Hero from "@/components/public-components/home/hero";
-import HeroSkeleton from "@/components/public-components/home/hero-skeleton"; // Import the skeleton
+import HeroSkeleton from "@/components/public-components/home/hero-skeleton";
 import NavBar, { NavLink } from "@/components/public-components/navbar/navbar";
 import { toast } from "@/hooks/use-toast";
 import { appwriteConfig, databases } from "@/lib/appwrite";
 import { useEffect, useState } from "react";
 import { PersonalInfo } from "./dashboard/page";
 import About from "@/components/public-components/about/about";
-import AboutSkeleton from "@/components/public-components/about/about-skeleton"; // Import About skeleton
+import AboutSkeleton from "@/components/public-components/about/about-skeleton";
 import Projects from "@/components/public-components/projects/projects";
 import Experience from "@/components/public-components/experience/experience";
 import Contact from "@/components/public-components/contact/contact";
@@ -58,7 +58,7 @@ export default function Home() {
         variant: "destructive",
       })
     } finally {
-      setIsLoading(false) // Set loading to false when done
+      setIsLoading(false)
     }
   }
 
@@ -89,7 +89,6 @@ export default function Home() {
     <div className="">
         <NavBar links={links} name={personalInfo?.name || "Name"}/>
         
-        {/* Conditionally render Hero or HeroSkeleton based on loading state */}
         {isLoading ? (
           <HeroSkeleton />
         ) : (
@@ -103,7 +102,6 @@ export default function Home() {
           />
         )}
         
-        {/* Conditionally render About or AboutSkeleton based on loading state and data */}
         {isLoading ? (
           <AboutSkeleton />
         ) : (

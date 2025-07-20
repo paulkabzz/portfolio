@@ -21,7 +21,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMessages, Message } from "@/app/context/messages-context";
+import { useMessages } from "@/app/context/messages-context";
 import ArchivedMessagesSkeleton from "@/components/skeletons/archive-messages-skeleton";
 
 export default function ArchivedMessagesPage() {

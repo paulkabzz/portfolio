@@ -14,9 +14,9 @@ export interface Experience {
   startDate: string
   endDate: string
   current: boolean
-  skills: string[] // Array of skills
-  images: string[] // Array of image URLs
-  coverImage?: string // First image URL
+  skills: string[]
+  images: string[]
+  coverImage?: string
   createdAt: string
 }
 

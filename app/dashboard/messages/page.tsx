@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   MessageSquare,
   Mail,
@@ -16,143 +16,224 @@ import {
   Clock,
   User,
   ArrowUpDown,
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useMessages, Message } from "@/app/context/messages-context";
+import { useRouter } from "next/navigation";
 
-interface Message {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  subject: string
-  message: string
-  urgent: boolean
-  createdAt: string
-  read: boolean
-}
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
 
-// Mock data - replace with actual data fetching
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "+27 67 123 4567",
-    subject: "Project Inquiry - E-commerce Website",
-    message:
-      "Hi there! I'm looking for a developer to help build an e-commerce website for my small business. We sell handmade crafts and need a modern, responsive site with payment integration. Could we schedule a call to discuss the project details and timeline?",
-    urgent: true,
-    createdAt: "2024-01-15T10:30:00Z",
-    read: false,
-  },
-  {
-    id: "2",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@techcorp.com",
-    phone: "+27 82 987 6543",
-    subject: "Job Opportunity - Senior Frontend Developer",
-    message:
-      "Hello! I'm a recruiter at TechCorp and we have an exciting opportunity for a Senior Frontend Developer position. The role involves working with React, TypeScript, and modern web technologies. Would you be interested in learning more about this position?",
-    urgent: false,
-    createdAt: "2024-01-14T14:22:00Z",
-    read: true,
-  },
-  {
-    id: "3",
-    name: "Mike Chen",
-    email: "mike@startup.io",
-    subject: "Collaboration Proposal",
-    message:
-      "I came across your portfolio and I'm impressed with your work! I'm working on a startup in the fintech space and would love to discuss a potential collaboration. We're looking for someone with your skills to help us build our MVP.",
-    urgent: false,
-    createdAt: "2024-01-13T09:15:00Z",
-    read: true,
-  },
-  {
-    id: "4",
-    name: "Emma Wilson",
-    email: "emma.wilson@agency.com",
-    phone: "+27 71 456 7890",
-    subject: "Freelance Project - Dashboard Development",
-    message:
-      "We're a digital agency looking for a freelance developer to help with a client project. It involves building a complex dashboard with data visualization components. The project timeline is 6-8 weeks. Are you available for freelance work?",
-    urgent: true,
-    createdAt: "2024-01-12T16:45:00Z",
-    read: false,
-  },
-  {
-    id: "5",
-    name: "David Brown",
-    email: "david@nonprofit.org",
-    subject: "Website Redesign for Non-Profit",
-    message:
-      "Our non-profit organization needs a website redesign to better showcase our mission and make it easier for people to donate and volunteer. We have a limited budget but are passionate about our cause. Would you be interested in discussing this project?",
-    urgent: false,
-    createdAt: "2024-01-11T11:20:00Z",
-    read: true,
-  },
-]
+  const seconds = Math.floor(diffInMs / 1000);
+  const minutes = Math.floor(diffInMs / (1000 * 60));
+  const hours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (seconds <= 1) {
+    return "Just now";
+  } else if (seconds <= 60) {
+    return `${seconds} second${seconds !== 1 ? "s" : ""} ago`;
+  } else if (minutes <= 60) {
+    return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
+  } else if (hours <= 24) {
+    return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
+  } else if (days <= 7) {
+    return `${days} day${days !== 1 ? "s" : ""} ago`;
+  } else {
+    return date.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }
+};
+
 
 export default function MessagesPage() {
-  const { toast } = useToast()
-  const [messages, setMessages] = useState<Message[]>(mockMessages)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterUnread, setFilterUnread] = useState(false)
-  const [filterUrgent, setFilterUrgent] = useState(false)
-  const [sortBy, setSortBy] = useState<"date" | "name">("date")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const { toast } = useToast();
+  const {
+    messages,
+    loading,
+    error,
+    fetchAllMessages,
+    markAsRead,
+  } = useMessages();
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterUnread, setFilterUnread] = useState(false);
+  const [filterUrgent, setFilterUrgent] = useState(false);
+  const [sortBy, setSortBy] = useState<"date" | "name">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [lastFetchTime, setLastFetchTime] = useState<number | null>(null);
+  
+  // Use ref to track if component is mounted
+  const isMountedRef = useRef(true);
+  
+  // Use ref to track the interval
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    if (diffInHours < 1) {
-      return "Just now"
-    } else if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`
-    } else if (diffInHours < 48) {
-      return "Yesterday"
-    } else {
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-      })
+  // Change to 5 minutes (5 * 60 * 1000 = 300,000 ms)
+  const FETCH_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
+  const LAST_FETCH_KEY = 'messages_last_fetch';
+
+  // Stable function using useCallback
+  const loadMessages = useCallback(async (force = false) => {
+    if (!isMountedRef.current) return;
+    
+    const lastFetch = localStorage.getItem(LAST_FETCH_KEY);
+    const now = Date.now();
+    
+    // Only fetch if forced or if more than 5 minutes have passed
+    if (!force && lastFetch && (now - parseInt(lastFetch)) < FETCH_INTERVAL) {
+      return;
     }
-  }
 
-  const markAsRead = (messageId: string) => {
-    setMessages((prev) => prev.map((msg) => (msg.id === messageId ? { ...msg, read: true } : msg)))
+    try {
+      await fetchAllMessages();
+      if (isMountedRef.current) {
+        localStorage.setItem(LAST_FETCH_KEY, now.toString());
+        setLastFetchTime(now);
+      }
+    } catch (error) {
+      if (isMountedRef.current) {
+        toast({
+          title: "Error",
+          description: "Failed to load messages. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [fetchAllMessages, toast, FETCH_INTERVAL, LAST_FETCH_KEY]);
+
+  // Manual refresh function
+  const handleRefresh = useCallback(async () => {
+    try {
+      await fetchAllMessages();
+      const now = Date.now();
+      localStorage.setItem(LAST_FETCH_KEY, now.toString());
+      setLastFetchTime(now);
+      toast({
+        title: "Success",
+        description: "Messages refreshed successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to refresh messages.",
+        variant: "destructive",
+      });
+    }
+  }, [fetchAllMessages, toast, LAST_FETCH_KEY]);
+
+  // Initialize and set up periodic fetching
+  useEffect(() => {
+    // Initialize lastFetchTime from localStorage
+    const lastFetch = localStorage.getItem(LAST_FETCH_KEY);
+    if (lastFetch) {
+      setLastFetchTime(parseInt(lastFetch));
+    }
+
+    // Initial load (force fetch on first mount)
+    loadMessages(true);
+
+    // Set up interval for periodic fetching
+    intervalRef.current = setInterval(() => {
+      loadMessages(false);
+    }, FETCH_INTERVAL);
+
+    // Cleanup function
+    return () => {
+      isMountedRef.current = false;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []); // Empty dependency array - this effect should only run once
+
+  // Separate effect for error handling
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
+
+  const handleMarkAsRead = async (messageId: string) => {
+    try {
+      await markAsRead(messageId);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to mark message as read.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const router = useRouter();
+
+  const handleMessageClicked = async (messageId: string) => {
+        try {
+            handleMarkAsRead(messageId)
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to mark message as read.",
+                variant: "destructive",
+            });
+        } finally {
+            router.push(`/dashboard/messages/${messageId}`);
+        }
   }
 
   const filteredAndSortedMessages = messages
     .filter((message) => {
       const matchesSearch =
-        message.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        message.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         message.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         message.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        message.message.toLowerCase().includes(searchTerm.toLowerCase())
+        message.message.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesUnreadFilter = !filterUnread || !message.read
-      const matchesUrgentFilter = !filterUrgent || message.urgent
+      const matchesUnreadFilter = !filterUnread || !message.read;
+      const matchesUrgentFilter = !filterUrgent || message.urgent;
 
-      return matchesSearch && matchesUnreadFilter && matchesUrgentFilter
+      return matchesSearch && matchesUnreadFilter && matchesUrgentFilter;
     })
     .sort((a, b) => {
-      let comparison = 0
+      let comparison = 0;
 
       if (sortBy === "date") {
-        comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        comparison = new Date(a.$createdAt).getTime() - new Date(b.$createdAt).getTime();
       } else {
-        comparison = a.name.localeCompare(b.name)
+        comparison = a.full_name.localeCompare(b.full_name);
       }
 
-      return sortOrder === "asc" ? comparison : -comparison
-    })
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
 
-  const unreadCount = messages.filter((msg) => !msg.read).length
-  const urgentCount = messages.filter((msg) => msg.urgent && !msg.read).length
+  const unreadCount = messages.filter((msg) => !msg.read).length;
+  const urgentCount = messages.filter((msg) => msg.urgent && !msg.read).length;
+
+  if (loading && messages.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-6 w-6 animate-spin text-green" />
+            <span className="text-lg text-primary">Loading messages...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -173,6 +254,11 @@ export default function MessagesPage() {
               {urgentCount} urgent
             </Badge>
           )}
+          {/* {lastFetchTime && !loading && (
+            <div className="text-xs text-primary/50">
+              Last updated: {new Date(lastFetchTime).toLocaleTimeString()}
+            </div>
+          )} */}
         </div>
       </div>
 
@@ -223,16 +309,26 @@ export default function MessagesPage() {
                 size="sm"
                 onClick={() => {
                   if (sortBy === "date") {
-                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
                   } else {
-                    setSortBy("date")
-                    setSortOrder("desc")
+                    setSortBy("date");
+                    setSortOrder("desc");
                   }
                 }}
                 className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
               >
                 <ArrowUpDown className="h-4 w-4 mr-2" />
                 {sortBy === "date" ? "Date" : "Name"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={loading}
+                className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
               </Button>
             </div>
           </div>
@@ -258,18 +354,18 @@ export default function MessagesPage() {
         ) : (
           filteredAndSortedMessages.map((message) => (
             <Card
-              key={message.id}
+              key={message.$id}
               className={`border-secondary transition-all hover:shadow-md cursor-pointer ${
                 !message.read ? "bg-green/5 border-green/20" : ""
               }`}
-              onClick={() => markAsRead(message.id)}
+              onClick={() => handleMessageClicked(message.$id)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <User className="h-4 w-4 text-primary/60 flex-shrink-0" />
-                      <span className="font-semibold text-primary truncate">{message.name}</span>
+                      <span className="font-semibold text-primary truncate">{message.full_name}</span>
                       {!message.read && (
                         <Badge variant="secondary" className="bg-green text-white text-xs">
                           New
@@ -286,7 +382,7 @@ export default function MessagesPage() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-primary/60 flex-shrink-0">
                     <Clock className="h-4 w-4" />
-                    {formatDate(message.createdAt)}
+                    {formatDate(message.$createdAt)}
                   </div>
                 </div>
               </CardHeader>
@@ -319,7 +415,7 @@ export default function MessagesPage() {
                     )}
                     <div className="flex items-center gap-2 text-sm text-primary/60">
                       <Calendar className="h-4 w-4 text-green" />
-                      {new Date(message.createdAt).toLocaleDateString("en-US", {
+                      {new Date(message.$createdAt).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
                         day: "numeric",
@@ -361,5 +457,5 @@ export default function MessagesPage() {
         </Card>
       )}
     </div>
-  )
+  );
 }

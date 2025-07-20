@@ -6,6 +6,7 @@ import { ProjectProvider } from "./context/project-context";
 import { ExperienceProvider } from "./context/experience-context";
 import { ToastProvider } from "@radix-ui/react-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { MessagesProvider } from "./context/messages-context";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -43,7 +44,9 @@ export default function RootLayout({
             <ProjectProvider>
               <ExperienceProvider>
                 <Toaster />
-                    {children}
+                  <MessagesProvider>
+                      {children}
+                  </MessagesProvider>
               </ExperienceProvider>
             </ProjectProvider>
           </AuthProvider> 

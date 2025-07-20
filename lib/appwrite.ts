@@ -12,7 +12,7 @@ export const appwriteConfig = {
     projectCollectionId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_COLLECTION_ID,
     experienceStorageId: process.env.NEXT_PUBLIC_APPWRITE_EXPERIENCE_STORAGE_ID,
     experinceCollectionId: process.env.NEXT_PUBLIC_APPWRITE_EXPERINCE_COLLECTION_ID,
-    messagedsCollectionId: process.env.NEXT_PUBLIC_APPWRITE_MESSAGES_COLLECTION_ID
+    messagesCollectionId: process.env.NEXT_PUBLIC_APPWRITE_MESSAGES_COLLECTION_ID
 } as const;
 
 export const client = new Client();

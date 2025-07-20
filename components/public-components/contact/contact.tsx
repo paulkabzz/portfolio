@@ -10,12 +10,12 @@ import { Send, Loader2, Mail, MessageSquare, Phone, MapPin, Clock } from "lucide
 import { Switch } from "@/components/ui/switch"
 import { PersonalInfo } from "@/app/dashboard/page"
 import { useToast } from "@/hooks/use-toast"
+import { useMessages } from "@/app/context/messages-context"
 import Link from "next/link"
 
-
-const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  => {
-
+const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone }) => {
   const { toast } = useToast();
+  const { submitMessage, loading } = useMessages();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -25,7 +25,6 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
     message: "",
     urgent: false,
   })
-  const [submitting, setSubmitting] = useState(false)
 
   const handleSwitchChange = (checked: boolean) => {
     setFormData((prev) => ({ 
@@ -40,17 +39,24 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
   }
 
   const handleSubmit = async () => {
-    setSubmitting(true)
-    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-    //   toast(`Form submitted: ${formData}`);
+      // Prepare the data for submission
+      const messageData = {
+        full_name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject,
+        message: formData.message,
+        urgent: formData.urgent,
+      }
 
+      // Submit the message using the context
+      await submitMessage(messageData)
+      
+      // Show success toast
       toast({
-        title: "MEssage submitted",
-        description: JSON.stringify(formData),
+        title: "Message Sent Successfully!",
+        description: "Thank you for your message. I'll get back to you as soon as possible.",
       })
       
       // Reset form
@@ -64,10 +70,14 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
       })
       
     } catch (error) {
-      console.error('Error submitting form:', error)
-      alert("Failed to send message. Please try again.")
-    } finally {
-      setSubmitting(false)
+      console.error('Error submitting message:', error)
+      
+      // Show error toast
+      toast({
+        title: "Failed to Send Message",
+        description: "Please try again later or contact me directly via email.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -107,7 +117,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                   placeholder="John Doe"
                   className="border-secondary focus:border-green"
                   required
-                  disabled={submitting}
+                  disabled={loading}
                 />
               </div>
 
@@ -124,7 +134,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                   placeholder="john@example.com"
                   className="border-secondary focus:border-green"
                   required
-                  disabled={submitting}
+                  disabled={loading}
                 />
               </div>
 
@@ -135,15 +145,15 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                 <Input
                   id="phone"
                   name="phone"
-                  type="phone"
+                  type="tel"
                   value={formData.phone}
                   onChange={handleInputChange}
                   placeholder="+27 67 123 4567"
                   className="border-secondary focus:border-green"
-                  required
-                  disabled={submitting}
+                  disabled={loading}
                 />
               </div>
+              
               <div>
                 <Label htmlFor="subject" className="text-primary">
                   Subject *
@@ -156,7 +166,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                   placeholder="Project inquiry, job opportunity, etc."
                   className="border-secondary focus:border-green"
                   required
-                  disabled={submitting}
+                  disabled={loading}
                 />
               </div>
 
@@ -173,7 +183,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                   rows={6}
                   className="border-secondary focus:border-green resize-none"
                   required
-                  disabled={submitting}
+                  disabled={loading}
                 />
               </div>
 
@@ -182,7 +192,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                   id="urgent"
                   checked={formData.urgent}
                   onCheckedChange={handleSwitchChange}
-                  disabled={submitting}
+                  disabled={loading}
                 />
                 <Label htmlFor="urgent" className="text-primary">
                   This is urgent
@@ -194,7 +204,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                   type="button"
                   variant="outline"
                   className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
-                  disabled={submitting}
+                  disabled={loading}
                   onClick={() => setFormData({
                     name: "",
                     email: "",
@@ -209,10 +219,10 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                 
                 <Button
                   onClick={handleSubmit}
-                  disabled={!isFormValid || submitting}
+                  disabled={!isFormValid || loading}
                   className="bg-green hover:bg-green/90 text-white disabled:opacity-50 flex-1"
                 >
-                  {submitting ? (
+                  {loading ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Sending...
@@ -241,7 +251,7 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                 <Mail className="h-5 w-5 text-green mt-0.5" />
                 <div>
                   <p className="text-primary font-medium text-sm">Email</p>
-                  <Link href={`mailto:${email}`} className="text-primary/70 text-[12px] hover:text-green">{ email }</Link>
+                  <Link href={`mailto:${email}`} className="text-primary/70 text-[12px] hover:text-green">{email}</Link>
                 </div>
               </div>
               
@@ -251,12 +261,11 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                     <Phone className="h-5 w-5 text-green mt-0.5" />
                     <div>
                     <p className="text-primary font-medium text-sm">Phone</p>
-                    <p className="text-primary/70 text-[12px]">{ phone }</p>
+                    <p className="text-primary/70 text-[12px]">{phone}</p>
                     </div>
                 </div>
                 )
              }
-
 
              {
                 location && (
@@ -264,11 +273,12 @@ const Contact: React.FC<Partial<PersonalInfo>> = ({ location, email, phone })  =
                     <MapPin className="h-5 w-5 text-green mt-0.5" />
                     <div>
                     <p className="text-primary font-medium text-sm">Location</p>
-                    <p className="text-primary/70 text-[12px]">{ location }</p>
+                    <p className="text-primary/70 text-[12px]">{location}</p>
                     </div>
                 </div>
                 )
              }
+              
               <div className="flex items-start gap-3">
                 <Clock className="h-5 w-5 text-green mt-0.5" />
                 <div>

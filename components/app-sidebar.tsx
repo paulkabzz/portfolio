@@ -1,6 +1,6 @@
 "use client"
 
-import { User, FolderOpen, Settings, Home, Briefcase } from "lucide-react"
+import { User, FolderOpen, Settings, Home, Briefcase, Mail } from "lucide-react"
 import Link from "next/link"
 
 import {
@@ -32,6 +32,11 @@ const menuItems = [
     title: "Personal Info",
     url: "/dashboard/profile",
     icon: User,
+  },
+  {
+    title: "Messages",
+    url: "/dashboard/messages",
+    icon: Mail
   },
   {
     title: "Experience",

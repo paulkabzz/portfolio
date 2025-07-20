@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMessages, Message } from "@/app/context/messages-context";
 import { useRouter } from "next/navigation";
 
-export const formatDate = (dateString: string) => {
+const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInMs = now.getTime() - date.getTime();

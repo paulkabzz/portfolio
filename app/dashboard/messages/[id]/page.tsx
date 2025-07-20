@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,50 +24,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
-
-interface Message {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  subject: string
-  message: string
-  urgent: boolean
-  createdAt: string
-  read: boolean
-  archived?: boolean
-}
-
-// Mock data - replace with actual data fetching
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "+27 67 123 4567",
-    subject: "Project Inquiry - E-commerce Website",
-    message:
-      "Hi there! I'm looking for a developer to help build an e-commerce website for my small business. We sell handmade crafts and need a modern, responsive site with payment integration. Could we schedule a call to discuss the project details and timeline?\n\nI've been researching different developers and your portfolio really stood out to me. The projects you've worked on show exactly the kind of quality and attention to detail I'm looking for.\n\nSome specific requirements:\n- Mobile-responsive design\n- Payment gateway integration (PayPal, Stripe)\n- Inventory management system\n- Customer reviews and ratings\n- SEO optimization\n\nMy budget is around $5,000-$8,000 and I'd like to launch within 2-3 months. Would this be something you'd be interested in discussing further?\n\nLooking forward to hearing from you!\n\nBest regards,\nJohn",
-    urgent: true,
-    createdAt: "2024-01-15T10:30:00Z",
-    read: false,
-    archived: false,
-  },
-  {
-    id: "2",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@techcorp.com",
-    phone: "+27 82 987 6543",
-    subject: "Job Opportunity - Senior Frontend Developer",
-    message:
-      "Hello! I'm a recruiter at TechCorp and we have an exciting opportunity for a Senior Frontend Developer position. The role involves working with React, TypeScript, and modern web technologies. Would you be interested in learning more about this position?",
-    urgent: false,
-    createdAt: "2024-01-14T14:22:00Z",
-    read: true,
-    archived: false,
-  },
-  // Add other mock messages...
-]
+import { useMessages } from "@/app/context/messages-context"
 
 export default function MessageDetailPage() {
   const router = useRouter()
@@ -75,19 +32,59 @@ export default function MessageDetailPage() {
   const { toast } = useToast()
   const messageId = params.id as string
 
-  const [message, setMessage] = useState<Message | null>(null)
+  // Use the MessagesContext
+  const {
+    messages,
+    archivedMessages,
+    loading: contextLoading,
+    error: contextError,
+    openMessage,
+    deleteMessage: contextDeleteMessage,
+    archiveMessage: contextArchiveMessage,
+    markAsRead: contextMarkAsRead,
+    markAsUnread: contextMarkAsUnread,
+  } = useMessages()
+
+  const [message, setMessage] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [hasInitiallyFetched, setHasInitiallyFetched] = useState(false)
 
+  // Memoize all messages to prevent unnecessary re-renders
+  const allMessages = useMemo(() => [...messages, ...archivedMessages], [messages, archivedMessages])
+
+  // Check if message exists in current context first
+  const existingMessage = useMemo(() => {
+    if (!messageId) return null
+    return allMessages.find(msg => msg.$id === messageId)
+  }, [allMessages, messageId])
+
+  // Initial fetch - only when message doesn't exist in context and we haven't fetched yet
   useEffect(() => {
-    // Simulate API call to fetch message
     const fetchMessage = async () => {
+      if (!messageId || hasInitiallyFetched) return
+      
+      // If message exists in context, use it instead of fetching
+      if (existingMessage) {
+        setMessage(existingMessage)
+        setLoading(false)
+        setHasInitiallyFetched(true)
+        return
+      }
+
       setLoading(true)
       try {
-        // Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        const foundMessage = mockMessages.find((msg) => msg.id === messageId)
-        setMessage(foundMessage || null)
+        const fetchedMessage = await openMessage(messageId)
+        setMessage(fetchedMessage)
+        setHasInitiallyFetched(true)
+
+        if (!fetchedMessage) {
+          toast({
+            title: "Message not found",
+            description: "The message you're looking for doesn't exist.",
+            variant: "destructive",
+          })
+        }
       } catch (error) {
         console.error("Error fetching message:", error)
         toast({
@@ -101,7 +98,15 @@ export default function MessageDetailPage() {
     }
 
     fetchMessage()
-  }, [messageId, toast])
+  }, [messageId, hasInitiallyFetched, existingMessage, openMessage, toast])
+
+  // Update local message when context messages change (for real-time updates)
+  // Only update if we already have the message and it exists in context
+  useEffect(() => {
+    if (hasInitiallyFetched && existingMessage && message) {
+      setMessage(existingMessage)
+    }
+  }, [existingMessage, hasInitiallyFetched, message])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -135,7 +140,7 @@ export default function MessageDetailPage() {
     }
   }
 
-  const handleAction = async (action: string, actionFunction: () => Promise<void>) => {
+  const handleAction = useCallback(async (action: string, actionFunction: () => Promise<void>) => {
     setActionLoading(action)
     try {
       await actionFunction()
@@ -149,52 +154,49 @@ export default function MessageDetailPage() {
     } finally {
       setActionLoading(null)
     }
-  }
+  }, [toast])
 
-  const markAsRead = async () => {
+  const markAsRead = useCallback(async () => {
     if (!message) return
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setMessage({ ...message, read: true })
+    await contextMarkAsRead(message.$id)
     toast({
       title: "Message marked as read",
       description: "The message has been marked as read.",
     })
-  }
+  }, [message, contextMarkAsRead, toast])
 
-  const markAsUnread = async () => {
+  const markAsUnread = useCallback(async () => {
     if (!message) return
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setMessage({ ...message, read: false })
+    await contextMarkAsUnread(message.$id)
     toast({
       title: "Message marked as unread",
       description: "The message has been marked as unread.",
     })
-  }
+  }, [message, contextMarkAsUnread, toast])
 
-  const archiveMessage = async () => {
+  const archiveMessage = useCallback(async () => {
     if (!message) return
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setMessage({ ...message, archived: true })
+    await contextArchiveMessage(message.$id)
     toast({
       title: "Message archived",
       description: "The message has been archived successfully.",
     })
-  }
+  }, [message, contextArchiveMessage, toast])
 
-  const deleteMessage = async () => {
+  const deleteMessage = useCallback(async () => {
     if (!message) return
     if (!confirm("Are you sure you want to delete this message? This action cannot be undone.")) {
       return
     }
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await contextDeleteMessage(message.$id)
     toast({
       title: "Message deleted",
       description: "The message has been deleted successfully.",
     })
     router.push("/dashboard/messages")
-  }
+  }, [message, contextDeleteMessage, toast, router])
 
-  const copyToClipboard = async (text: string, label: string) => {
+  const copyToClipboard = useCallback(async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text)
       toast({
@@ -208,22 +210,38 @@ export default function MessageDetailPage() {
         variant: "destructive",
       })
     }
-  }
+  }, [toast])
 
-  const composeReply = () => {
+  const composeReply = useCallback(() => {
     if (!message) return
     const subject = message.subject.startsWith("Re:") ? message.subject : `Re: ${message.subject}`
-    const body = `\n\n---\nOriginal message from ${message.name} (${message.email}):\n${message.message}`
+    const body = `\n\n---\nOriginal message from ${message.full_name} (${message.email}):\n${message.message}`
     const mailtoUrl = `mailto:${message.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
     window.open(mailtoUrl, "_blank")
-  }
+  }, [message])
 
-  if (loading) {
+  if (loading || contextLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex items-center gap-2 text-primary">
           <Loader2 className="h-5 w-5 animate-spin" />
           Loading message...
+        </div>
+      </div>
+    )
+  }
+
+  if (contextError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold text-red-600">Error</h2>
+          <p className="text-red-600/70">{contextError}</p>
+          <Link href="/dashboard/messages">
+            <Button variant="outline" className="border-secondary text-primary hover:bg-secondary/50 bg-transparent">
+              Back to Messages
+            </Button>
+          </Link>
         </div>
       </div>
     )
@@ -346,14 +364,14 @@ export default function MessageDetailPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <User className="h-5 w-5 text-primary/60" />
-                    <span className="font-semibold text-primary text-lg">{message.name}</span>
+                    <span className="font-semibold text-primary text-lg">{message.full_name}</span>
                   </div>
                   <CardTitle className="text-xl text-primary mb-3">{message.subject}</CardTitle>
                   <div className="flex items-center gap-2 text-sm text-primary/60">
                     <Clock className="h-4 w-4" />
-                    <span>{formatRelativeDate(message.createdAt)}</span>
+                    <span>{formatRelativeDate(message.$createdAt)}</span>
                     <span className="text-primary/40">•</span>
-                    <span>{formatDate(message.createdAt)}</span>
+                    <span>{formatDate(message.$createdAt)}</span>
                   </div>
                 </div>
               </div>
@@ -434,7 +452,7 @@ export default function MessageDetailPage() {
                   <Calendar className="h-5 w-5 text-green mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-primary font-medium text-sm">Received</p>
-                    <p className="text-primary/70 text-sm">{formatDate(message.createdAt)}</p>
+                    <p className="text-primary/70 text-sm">{formatDate(message.$createdAt)}</p>
                   </div>
                 </div>
               </div>
@@ -481,7 +499,7 @@ export default function MessageDetailPage() {
                 size="sm"
                 onClick={() =>
                   copyToClipboard(
-                    `Subject: ${message.subject}\nFrom: ${message.name} (${message.email})\nDate: ${formatDate(message.createdAt)}\n\n${message.message}`,
+                    `Subject: ${message.subject}\nFrom: ${message.full_name} (${message.email})\nDate: ${formatDate(message.$createdAt)}\n\n${message.message}`,
                     "Message content",
                   )
                 }
@@ -520,6 +538,15 @@ export default function MessageDetailPage() {
               <div className="flex justify-between items-center text-sm">
                 <span className="text-primary/60">Word Count</span>
                 <span className="text-primary">{message.message.split(" ").length} words</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-primary/60">Archived</span>
+                <Badge
+                  variant="secondary"
+                  className={message.archived ? "bg-gray-500/10 text-gray-500" : "bg-green/10 text-green"}
+                >
+                  {message.archived ? "Yes" : "No"}
+                </Badge>
               </div>
             </CardContent>
           </Card>

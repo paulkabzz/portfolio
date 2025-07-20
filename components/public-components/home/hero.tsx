@@ -2,6 +2,7 @@ import Link from "next/link";
 import Button from "../button/button";
 import styles from './index.module.css';
 import { parseTextWithFormatting } from "@/components/utils";
+import { useRouter } from "next/navigation";
 
 
 interface IHero {
@@ -25,6 +26,8 @@ const Headline = ({ headline }: {headline: string}) => {
 
 const Hero: React.FC<IHero> = ({name, avatar_url, occupation, linkedin, github, headline}) => {
 
+    const router = useRouter();
+
   return (
     <section className={styles.container}>
         <div className={styles.imageSection}>
@@ -43,7 +46,7 @@ const Hero: React.FC<IHero> = ({name, avatar_url, occupation, linkedin, github, 
                 </h2>
                 <div className={styles.buttons}>
                     <Button label="Request CV" isLight={true}/>
-                    <Button label="Contact Me" />
+                    <Button label="Contact Me" onClick={() => router.push('#contact')} />
                 </div>
               {
                 (linkedin || github) && (

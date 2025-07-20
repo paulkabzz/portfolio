@@ -19,6 +19,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useExperience } from "@/app/context/experience-context"
+import ExperiencePageSkeleton from "@/components/skeletons/experience-page-skeleton"
 
 export default function ExperiencePage() {
   const { experiences, loading, deleteExperience } = useExperience();
@@ -51,7 +52,7 @@ export default function ExperiencePage() {
     }
   };
 
-  if (loading) return <div>Loading..</div>
+  if (loading) return <ExperiencePageSkeleton />
 
   return (
     <div className="space-y-6">

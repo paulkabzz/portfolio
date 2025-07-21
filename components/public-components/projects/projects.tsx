@@ -138,7 +138,7 @@ const Projects = () => {
               <ExternalLink className="h-8 w-8 text-primary/30" />
             </div>
             <h3 className="text-xl font-semibold text-primary mb-2">No projects yet</h3>
-            <p className="text-primary/60 mb-6">Start building your portfolio by adding your first project.</p>
+            <p className="text-primary/60 mb-6">Still building some cool stuff .</p>
           </div>
         )}
       </div>

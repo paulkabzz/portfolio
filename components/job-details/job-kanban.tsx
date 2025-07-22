@@ -2,11 +2,11 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { DndContext, type DragEndEvent, DragOverlay, type DragStartEvent } from "@dnd-kit/core"
+import { DndContext, type DragEndEvent, DragOverlay, type DragStartEvent, useDroppable } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
@@ -21,6 +21,7 @@ import {
   MessageSquare,
   FileText,
   AlertCircle,
+  Loader2,
 } from "lucide-react"
 import { useJob } from "@/app/context/job-context"
 import { toast } from "@/hooks/use-toast"
@@ -77,7 +78,7 @@ const statusColumns = [
   },
 ]
 
-const SortableItem: React.FC<{ item: KanbanItem }> = ({ item }) => {
+const SortableItem: React.FC<{ item: KanbanItem; isUpdating: boolean }> = ({ item, isUpdating }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   })
@@ -107,7 +108,7 @@ const SortableItem: React.FC<{ item: KanbanItem }> = ({ item }) => {
       style={style}
       {...attributes}
       {...listeners}
-      className="p-3 bg-white border border-secondary rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing"
+      className="p-3 bg-white border border-secondary rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing relative"
     >
       <div className="flex items-start gap-2">
         <div className="text-primary/60 mt-0.5">{getItemIcon()}</div>
@@ -121,39 +122,98 @@ const SortableItem: React.FC<{ item: KanbanItem }> = ({ item }) => {
             </div>
           )}
         </div>
-        {item.completed && <CheckCircle className="h-4 w-4 text-green-500" />}
+        <div className="flex items-center gap-1">
+          {isUpdating && (
+            <Loader2 className="h-3 w-3 text-blue-500 animate-spin" />
+          )}
+          {item.completed && <CheckCircle className="h-4 w-4 text-green-500" />}
+        </div>
       </div>
     </div>
+  )
+}
+
+// New Droppable Column Component
+const DroppableColumn: React.FC<{
+  column: typeof statusColumns[0]
+  items: KanbanItem[]
+  isOver: boolean
+  isUpdating: boolean
+}> = ({ column, items, isOver, isUpdating }) => {
+  const { setNodeRef } = useDroppable({
+    id: column.id,
+  })
+
+  return (
+    <Card key={column.id} className="border-secondary">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <div className={`w-3 h-3 rounded-full ${column.color}`} />
+          <CardTitle className="text-sm font-medium text-primary">{column.title}</CardTitle>
+          <Badge variant="outline" className="ml-auto">
+            {items.length}
+          </Badge>
+        </div>
+        <p className="text-xs text-primary/60">{column.description}</p>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div 
+          ref={setNodeRef}
+          className={`space-y-3 min-h-[200px] transition-colors ${
+            isOver ? 'bg-blue-50 dark:bg-blue-950/20' : ''
+          }`}
+        >
+          <SortableContext items={items.map((item) => item.id)} strategy={verticalListSortingStrategy}>
+            {items.map((item) => (
+              <SortableItem key={item.id} item={item} isUpdating={isUpdating} />
+            ))}
+            {items.length === 0 && (
+              <div className={`flex items-center justify-center h-32 border-2 border-dashed rounded-lg transition-colors ${
+                isOver 
+                  ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/20' 
+                  : 'border-secondary'
+              }`}>
+                <p className="text-sm text-primary/40">Drop items here</p>
+              </div>
+            )}
+          </SortableContext>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
 export const JobKanban: React.FC<JobKanbanProps> = ({ job }) => {
   const { updateJobApplication } = useJob()
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [overId, setOverId] = useState<string | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
 
-  // Generate kanban items based on job data
+  // Generate kanban items based on job data - FIXED: Only show items in current status column
   const generateKanbanItems = (): KanbanItem[] => {
-    const items: KanbanItem[] = [
-      {
-        id: "application-submitted",
-        title: "Application Submitted",
-        description: `Applied for ${job.job_title} at ${job.company_name}`,
-        type: "milestone",
-        status: "APPLIED",
-        date: job.application_date,
-        completed: true,
-      },
-    ]
+    const items: KanbanItem[] = []
+    const currentStatus = job.status
 
-    // Add interview items if in interviewing status
-    if (job.status === "INTERVIEWING" || job.status === "OFFER_RECEIVED" || job.status === "REJECTED") {
+    // Base application item - always in current status
+    items.push({
+      id: "application-submitted",
+      title: "Application Submitted",
+      description: `Applied for ${job.job_title} at ${job.company_name}`,
+      type: "milestone",
+      status: currentStatus,
+      date: job.application_date,
+      completed: true,
+    })
+
+    // Add status-specific items only if they match current status
+    if (currentStatus === "INTERVIEWING") {
       items.push({
         id: "screening-call",
         title: "Initial Screening",
         description: "Phone/video screening with recruiter",
         type: "milestone",
         status: "INTERVIEWING",
-        completed: job.status !== "INTERVIEWING",
+        completed: false,
       })
 
       if (job.interview_dates && job.interview_dates.length > 0) {
@@ -165,14 +225,13 @@ export const JobKanban: React.FC<JobKanbanProps> = ({ job }) => {
             type: "milestone",
             status: "INTERVIEWING",
             date: date,
-            completed: job.status !== "INTERVIEWING",
+            completed: false,
           })
         })
       }
     }
 
-    // Add offer items if offer received
-    if (job.status === "OFFER_RECEIVED") {
+    if (currentStatus === "OFFER_RECEIVED") {
       items.push({
         id: "offer-received",
         title: "Offer Received",
@@ -194,8 +253,7 @@ export const JobKanban: React.FC<JobKanbanProps> = ({ job }) => {
       }
     }
 
-    // Add rejection item if rejected
-    if (job.status === "REJECTED") {
+    if (currentStatus === "REJECTED") {
       items.push({
         id: "application-rejected",
         title: "Application Rejected",
@@ -206,25 +264,35 @@ export const JobKanban: React.FC<JobKanbanProps> = ({ job }) => {
       })
     }
 
-    // Add next steps if available
+    if (currentStatus === "ARCHIVED") {
+      items.push({
+        id: "application-archived",
+        title: "Application Archived",
+        description: "Application has been archived",
+        type: "milestone",
+        status: "ARCHIVED",
+        completed: true,
+      })
+    }
+
+    // Add additional items that belong to current status
     if (job.next_steps) {
       items.push({
         id: "next-steps",
         title: "Next Steps",
         description: job.next_steps,
         type: "task",
-        status: job.status,
+        status: currentStatus,
       })
     }
 
-    // Add notes as items
     if (job.notes) {
       items.push({
         id: "notes",
         title: "Application Notes",
         description: job.notes,
         type: "note",
-        status: job.status,
+        status: currentStatus,
       })
     }
 
@@ -233,34 +301,50 @@ export const JobKanban: React.FC<JobKanbanProps> = ({ job }) => {
 
   const [items, setItems] = useState<KanbanItem[]>(generateKanbanItems())
 
+  // Regenerate items when job status changes
+  useEffect(() => {
+    setItems(generateKanbanItems())
+  }, [job.status, job.interview_dates, job.notes, job.feedback, job.next_steps, job.response_deadline])
+
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
+  }
+
+  const handleDragOver = (event: any) => {
+    setOverId(event.over?.id || null)
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     setActiveId(null)
+    setOverId(null)
 
     if (!over) return
 
     const activeItem = items.find((item) => item.id === active.id)
     const newStatus = over.id as string
 
-    if (activeItem && activeItem.status !== newStatus) {
-      // Update the item status
-      const updatedItems = items.map((item) => (item.id === active.id ? { ...item, status: newStatus } : item))
-      setItems(updatedItems)
-
-      // If moving the main application milestone, update the job status
-      if (active.id === "application-submitted" || statusColumns.some((col) => col.id === newStatus)) {
-        try {
-          await updateJobApplication(job.$id, { status: newStatus as any })
-          toast({title: `Application status updated to ${newStatus.replace("_", " ")}`})
-        } catch (error) {
-          toast({title: "Failed to update application status", variant: "destructive"});
-          // Revert the change
-          setItems(items)
-        }
+    // Check if the drop target is a valid column and different from current status
+    if (activeItem && statusColumns.some(col => col.id === newStatus) && job.status !== newStatus) {
+      // Show updating indicator
+      setIsUpdating(true)
+      
+      try {
+        // Update the job status in the database
+        await updateJobApplication(job.$id, { status: newStatus as any })
+        toast({
+          title: `Status updated to ${newStatus.replace("_", " ").toLowerCase()}`,
+          duration: 2000,
+        })
+      } catch (error) {
+        console.error("Failed to update application status:", error)
+        toast({
+          title: "Failed to update status",
+          variant: "destructive",
+          duration: 3000,
+        })
+      } finally {
+        setIsUpdating(false)
       }
     }
   }
@@ -268,47 +352,42 @@ export const JobKanban: React.FC<JobKanbanProps> = ({ job }) => {
   const activeItem = items.find((item) => item.id === activeId)
 
   return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext 
+      onDragStart={handleDragStart} 
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {statusColumns.map((column) => {
           const columnItems = items.filter((item) => item.status === column.id)
+          const isOver = overId === column.id
 
           return (
-            <Card key={column.id} className="border-secondary">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${column.color}`} />
-                  <CardTitle className="text-sm font-medium text-primary">{column.title}</CardTitle>
-                  <Badge variant="outline" className="ml-auto">
-                    {columnItems.length}
-                  </Badge>
-                </div>
-                <p className="text-xs text-primary/60">{column.description}</p>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <SortableContext items={columnItems.map((item) => item.id)} strategy={verticalListSortingStrategy}>
-                  <div className="space-y-3 min-h-[200px]">
-                    {columnItems.map((item) => (
-                      <SortableItem key={item.id} item={item} />
-                    ))}
-                    {columnItems.length === 0 && (
-                      <div className="flex items-center justify-center h-32 border-2 border-dashed border-secondary rounded-lg">
-                        <p className="text-sm text-primary/40">Drop items here</p>
-                      </div>
-                    )}
-                  </div>
-                </SortableContext>
-              </CardContent>
-            </Card>
+            <DroppableColumn 
+              key={column.id}
+              column={column}
+              items={columnItems}
+              isOver={isOver}
+              isUpdating={isUpdating}
+            />
           )
         })}
       </div>
 
       <DragOverlay>
         {activeItem ? (
-          <div className="p-3 bg-white border border-secondary rounded-lg shadow-lg">
-            <h4 className="font-medium text-primary text-sm">{activeItem.title}</h4>
-            {activeItem.description && <p className="text-xs text-primary/60 mt-1">{activeItem.description}</p>}
+          <div className="p-3 bg-white border border-secondary rounded-lg shadow-lg rotate-3">
+            <div className="flex items-start gap-2">
+              <div className="text-primary/60 mt-0.5">
+                {activeItem.type === "milestone" && <CheckCircle className="h-4 w-4" />}
+                {activeItem.type === "task" && <FileText className="h-4 w-4" />}
+                {activeItem.type === "note" && <MessageSquare className="h-4 w-4" />}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-primary text-sm">{activeItem.title}</h4>
+                {activeItem.description && <p className="text-xs text-primary/60 mt-1">{activeItem.description}</p>}
+              </div>
+            </div>
           </div>
         ) : null}
       </DragOverlay>

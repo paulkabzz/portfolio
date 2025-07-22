@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -25,21 +25,47 @@ import {
   AlertCircle,
   Upload,
   FileText,
+  Save,
+  Trash2,
 } from "lucide-react"
-import Link from "next/link"
-import { useToast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { toast } from "@/hooks/use-toast"
 import { useJob } from "@/app/context/job-context"
+
+interface EditJobApplicationPageProps {
+  jobId: string
+}
 
 type BadgeVariant = "default" | "destructive" | "outline" | "secondary"
 
-export default function NewJobApplicationPage() {
+export const EditJobApplicationPage: React.FC<EditJobApplicationPageProps> = ({ jobId }) => {
   const router = useRouter()
-  const { toast } = useToast()
-  const { createJobApplication, cvs, uploadCV, isLoading: contextLoading } = useJob()
+  const {
+    jobApplications,
+    updateJobApplication,
+    deleteJobApplication,
+    cvs,
+    uploadCV,
+    isLoading: contextLoading,
+  } = useJob()
+
+  const [job, setJob] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploadingCV, setIsUploadingCV] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [showCVUpload, setShowCVUpload] = useState(false)
   const [newCVName, setNewCVName] = useState("")
+  const [hasChanges, setHasChanges] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] = useState({
@@ -50,7 +76,7 @@ export default function NewJobApplicationPage() {
     status: "APPLIED" as "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "OFFER_REJECTED" | "ARCHIVED",
     location: "",
     contact_person: "",
-    contact_email: null,
+    contact_email: null as string | null,
     notes: "",
     source: "",
     feedback: "",
@@ -66,6 +92,57 @@ export default function NewJobApplicationPage() {
 
   const [interview_dates, setInterviewDates] = useState<string[]>([])
   const [newInterviewDate, setNewInterviewDate] = useState("")
+  const [originalData, setOriginalData] = useState<any>(null)
+
+  // Load job data when component mounts
+  useEffect(() => {
+    const foundJob = jobApplications.find((j) => j.$id === jobId)
+    if (foundJob) {
+      setJob(foundJob)
+
+      // Populate form with existing data
+      const jobData = {
+        job_title: foundJob.job_title || "",
+        company_name: foundJob.company_name || "",
+        job_url: foundJob.job_url || "",
+        application_date: foundJob.application_date || "",
+        status: foundJob.status || "APPLIED",
+        location: foundJob.location || "",
+        contact_person: foundJob.contact_person || "",
+        contact_email: foundJob.contact_email || null,
+        notes: foundJob.notes || "",
+        source: foundJob.source || "",
+        feedback: foundJob.feedback || "",
+        min_salary: foundJob.min_salary || 0,
+        max_salary: foundJob.max_salary || 0,
+        cv_id: foundJob.cv_id || "",
+        fk_cv_id: foundJob.fk_cv_id || "",
+        next_steps: foundJob.next_steps || "",
+        response_deadline: foundJob.response_deadline || "",
+        featured_application: foundJob.featured_application || false,
+        urgent_application: foundJob.urgent_application || false,
+      }
+
+      setFormData(jobData)
+      setOriginalData(jobData)
+      setInterviewDates(foundJob.interview_dates || [])
+    } else if (!contextLoading && jobApplications.length > 0) {
+      // Job not found, redirect back
+      toast({ variant: "destructive", title: "Job application not found"})
+      router.push("/dashboard/jobs")
+    }
+  }, [jobId, jobApplications, contextLoading, router])
+
+  // Check for changes
+  useEffect(() => {
+    if (originalData) {
+      const currentData = { ...formData, interview_dates }
+      const originalWithDates = { ...originalData, interview_dates: job?.interview_dates || [] }
+
+      const hasFormChanges = JSON.stringify(currentData) !== JSON.stringify(originalWithDates)
+      setHasChanges(hasFormChanges)
+    }
+  }, [formData, interview_dates, originalData, job])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -73,7 +150,7 @@ export default function NewJobApplicationPage() {
   }
 
   const handleNumberChange = (name: string, value: string) => {
-    const numValue = parseFloat(value) || 0
+    const numValue = Number.parseFloat(value) || 0
     setFormData((prev) => ({ ...prev, [name]: numValue }))
   }
 
@@ -91,50 +168,39 @@ export default function NewJobApplicationPage() {
   const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !newCVName.trim()) {
-      toast({
-        title: "Missing information",
-        description: "Please select a file and provide a CV name",
-        variant: "destructive",
-      })
+      toast({ variant: "destructive", title: "Please select a file and provide a CV name"})
       return
     }
 
     try {
       setIsUploadingCV(true)
       const newCV = await uploadCV(file, newCVName.trim())
-      setFormData((prev) => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         cv_id: newCV.cv_id,
-        fk_cv_id: newCV.$id 
+        fk_cv_id: newCV.$id,
       }))
       setShowCVUpload(false)
       setNewCVName("")
       if (fileInputRef.current) {
         fileInputRef.current.value = ""
       }
-      toast({
-        title: "CV uploaded successfully",
-        description: "Your CV has been uploaded and selected",
-      })
+      toast({title: "CV uploaded successfully"})
     } catch (error) {
       console.error("Error uploading CV:", error)
-      toast({
-        title: "Error uploading CV",
-        description: "Please try again later",
-        variant: "destructive",
-      })
+      toast({ variant: "destructive", title: "Failed to upload CV"})
     } finally {
       setIsUploadingCV(false)
     }
   }
 
   const handleCVSelect = (cvId: string) => {
-    const selectedCV = cvs.find(cv => cv.$id === cvId)
+    const selectedCV = cvs.find((cv) => cv.$id === cvId)
     if (selectedCV) {
-      setFormData((prev) => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         cv_id: selectedCV.cv_id,
-        fk_cv_id: selectedCV.$id 
+        fk_cv_id: selectedCV.$id,
       }))
     }
   }
@@ -143,39 +209,47 @@ export default function NewJobApplicationPage() {
     e.preventDefault()
 
     if (!formData.job_title || !formData.company_name || !formData.application_date || !formData.location) {
-      toast({
-        title: "Missing required fields",
-        description: "Please fill in job title, company name, application date, and location",
-        variant: "destructive",
-      })
+      toast({ variant: "destructive", title: "Please fill in job title, company name, application date, and location"})
       return
     }
 
     setIsSubmitting(true)
-
     try {
       const jobApplicationData = {
         ...formData,
         interview_dates,
       }
 
-      await createJobApplication(jobApplicationData)
-
-      toast({
-        title: "Job application created successfully",
-        description: "Your job application has been added to your tracker",
-      })
-
-      router.push("/dashboard/jobs")
+      await updateJobApplication(jobId, jobApplicationData)
+      toast({title: "Job application updated successfully"})
+      router.push(`/dashboard/jobs/${jobId}`)
     } catch (error) {
-      console.error("Error creating job application:", error)
-      toast({
-        title: "Error creating job application",
-        description: "Please try again later",
-        variant: "destructive",
-      })
+      console.error("Error updating job application:", error)
+      toast({ variant: "destructive", title: "Failed to update job application"})
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      await deleteJobApplication(jobId)
+      toast({title: "Job application deleted successfully"})
+      router.push("/dashboard/jobs")
+    } catch (error) {
+      console.error("Error deleting job application:", error)
+      toast({ variant: "destructive", title: "Failed to delete job application"})
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const resetForm = () => {
+    if (originalData && job) {
+      setFormData(originalData)
+      setInterviewDates(job.interview_dates || [])
+      toast({title: "Form reset to original values"})
     }
   }
 
@@ -192,24 +266,117 @@ export default function NewJobApplicationPage() {
     return variants[status] || "outline"
   }
 
-  const selectedCV = cvs.find(cv => cv.$id === formData.fk_cv_id)
+  const selectedCV = cvs.find((cv) => cv.$id === formData.fk_cv_id)
+
+  // Loading state
+  if (contextLoading || !job) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <div>
+            <div className="h-8 w-64 bg-secondary animate-pulse rounded" />
+            <div className="h-4 w-96 bg-secondary animate-pulse rounded mt-2" />
+          </div>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="border-secondary">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="h-4 w-32 bg-secondary animate-pulse rounded" />
+                  <div className="h-10 w-full bg-secondary animate-pulse rounded" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" className="hover:bg-secondary/50" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-primary">Add New Job Application</h1>
-          <p className="text-primary/70 mt-2">Track a new job application in your portfolio</p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" className="hover:bg-secondary/50" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-primary">Edit Job Application</h1>
+            <p className="text-primary/70 mt-2">
+              Update your application for {job.job_title} at {job.company_name}
+            </p>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          {hasChanges && (
+            <Button
+              variant="outline"
+              onClick={resetForm}
+              disabled={isSubmitting}
+              className="border-secondary bg-transparent"
+            >
+              Reset Changes
+            </Button>
+          )}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 bg-transparent">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Job Application</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this job application for {job.job_title} at {job.company_name}? This
+                  action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-red-600 hover:bg-red-700">
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete Application"
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
+
+      {/* Change Indicator */}
+      {hasChanges && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-orange-800">
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-sm font-medium">You have unsaved changes</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Left Column */}
           <div className="space-y-6">
+            {/* Job Details */}
             <Card className="border-secondary">
               <CardHeader>
                 <CardTitle className="text-primary">Job Details</CardTitle>
@@ -287,7 +454,7 @@ export default function NewJobApplicationPage() {
                     </Label>
                     <Select
                       value={formData.status}
-                      onValueChange={(value: "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "OFFER_REJECTED" | "ARCHIVED") => 
+                      onValueChange={(value: "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "OFFER_REJECTED" | "ARCHIVED") =>
                         setFormData({ ...formData, status: value })
                       }
                       disabled={isSubmitting}
@@ -379,6 +546,7 @@ export default function NewJobApplicationPage() {
               </CardContent>
             </Card>
 
+            {/* Contact Information */}
             <Card className="border-secondary">
               <CardHeader>
                 <CardTitle className="text-primary">Contact Information</CardTitle>
@@ -408,7 +576,7 @@ export default function NewJobApplicationPage() {
                       id="contact_email"
                       name="contact_email"
                       type="email"
-                      value={formData.contact_email ?? undefined}
+                      value={formData.contact_email ?? ""}
                       onChange={handleInputChange}
                       placeholder="sarah@company.com"
                       className="border-secondary focus:border-green"
@@ -419,10 +587,13 @@ export default function NewJobApplicationPage() {
               </CardContent>
             </Card>
 
+            {/* CV Selection */}
             <Card className="border-secondary">
               <CardHeader>
                 <CardTitle className="text-primary">CV Selection</CardTitle>
-                <CardDescription className="text-primary/60">Choose or upload a CV for this application</CardDescription>
+                <CardDescription className="text-primary/60">
+                  Choose or upload a CV for this application
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {!showCVUpload ? (
@@ -455,7 +626,7 @@ export default function NewJobApplicationPage() {
                       type="button"
                       variant="outline"
                       onClick={() => setShowCVUpload(true)}
-                      className="w-full border-secondary text-primary hover:bg-secondary/50"
+                      className="w-full border-secondary text-primary hover:bg-secondary/50 bg-transparent"
                       disabled={isSubmitting}
                     >
                       <Upload className="h-4 w-4 mr-2" />
@@ -502,7 +673,7 @@ export default function NewJobApplicationPage() {
                             fileInputRef.current.value = ""
                           }
                         }}
-                        className="flex-1 border-secondary text-primary hover:bg-secondary/50"
+                        className="flex-1 border-secondary text-primary hover:bg-secondary/50 bg-transparent"
                         disabled={isUploadingCV}
                       >
                         Cancel
@@ -519,6 +690,7 @@ export default function NewJobApplicationPage() {
               </CardContent>
             </Card>
 
+            {/* Interview Dates */}
             <Card className="border-secondary">
               <CardHeader>
                 <CardTitle className="text-primary">Interview Dates</CardTitle>
@@ -565,6 +737,7 @@ export default function NewJobApplicationPage() {
 
           {/* Right Column */}
           <div className="space-y-6">
+            {/* Additional Details */}
             <Card className="border-secondary">
               <CardHeader>
                 <CardTitle className="text-primary">Additional Details</CardTitle>
@@ -661,6 +834,7 @@ export default function NewJobApplicationPage() {
               </CardContent>
             </Card>
 
+            {/* Preview */}
             <Card className="border-secondary">
               <CardHeader>
                 <CardTitle className="text-primary">Preview</CardTitle>
@@ -684,7 +858,7 @@ export default function NewJobApplicationPage() {
                       variant={getStatusBadgeVariant(formData.status)}
                       className="bg-green/10 text-green border-green/20"
                     >
-                      {formData.status.replace('_', ' ')}
+                      {formData.status.replace("_", " ")}
                     </Badge>
                   </div>
 
@@ -698,12 +872,11 @@ export default function NewJobApplicationPage() {
                     {(formData.min_salary > 0 || formData.max_salary > 0) && (
                       <div className="flex items-center text-sm text-primary/70">
                         <DollarSign className="h-4 w-4 mr-2" />
-                        {formData.min_salary > 0 && formData.max_salary > 0 
+                        {formData.min_salary > 0 && formData.max_salary > 0
                           ? `$${formData.min_salary.toLocaleString()} - $${formData.max_salary.toLocaleString()}`
-                          : formData.min_salary > 0 
-                          ? `From $${formData.min_salary.toLocaleString()}`
-                          : `Up to $${formData.max_salary.toLocaleString()}`
-                        }
+                          : formData.min_salary > 0
+                            ? `From $${formData.min_salary.toLocaleString()}`
+                            : `Up to $${formData.max_salary.toLocaleString()}`}
                       </div>
                     )}
                     {formData.application_date && (
@@ -740,28 +913,32 @@ export default function NewJobApplicationPage() {
           </div>
         </div>
 
+        {/* Form Actions */}
         <div className="flex gap-4 justify-end">
-          <Link href="/dashboard/jobs">
-            <Button
-              variant="outline"
-              className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-          </Link>
+          <Button
+            type="button"
+            variant="outline"
+            className="border-secondary text-primary hover:bg-secondary/50 bg-transparent"
+            disabled={isSubmitting}
+            onClick={() => router.back()}
+          >
+            Cancel
+          </Button>
           <Button
             type="submit"
-            disabled={!isFormValid || isSubmitting || isUploadingCV}
+            disabled={!isFormValid || isSubmitting || isUploadingCV || !hasChanges}
             className="bg-green hover:bg-green/90 text-white disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Application...
+                Updating Application...
               </>
             ) : (
-              "Create Application"
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Update Application
+              </>
             )}
           </Button>
         </div>

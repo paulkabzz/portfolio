@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import {
   MapPin,
-  DollarSign,
+  Banknote,
   Calendar,
   User,
   ExternalLink,
@@ -138,7 +138,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   return (
     <>
       <Card className="border-secondary hover:shadow-md transition-shadow">
-        <CardContent className="p-6">
+        <CardContent className="px-6 py-0">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -197,7 +197,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
               {job.location}
             </div>
             <div className="flex items-center text-sm text-primary/70">
-              <DollarSign className="h-4 w-4 mr-2" />
+              <Banknote className="h-4 w-4 mr-2" />
               {formatSalary(job.min_salary, job.max_salary)}
             </div>
             <div className="flex items-center text-sm text-primary/70">

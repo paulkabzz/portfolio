@@ -18,7 +18,7 @@ interface JobApplication {
   company_name: string
   job_url?: string
   application_date: string
-  status: 'APPLIED' | 'INTERVIEWING' | 'OFFER_RECEIVED' | 'REJECTED' | 'ARCHIVED'
+  status: 'APPLIED' | 'INTERVIEWING' | 'OFFER_RECEIVED' | 'OFFER_REJECTED' | 'ARCHIVED'
   location: string
   contact_person?: string
   contact_email?: string
@@ -44,7 +44,7 @@ interface CreateJobApplicationData {
   company_name: string
   job_url?: string
   application_date: string
-  status: 'APPLIED' | 'INTERVIEWING' | 'OFFER_RECEIVED' | 'REJECTED' | 'ARCHIVED'
+  status: 'APPLIED' | 'INTERVIEWING' | 'OFFER_RECEIVED' | 'OFFER_REJECTED' | 'ARCHIVED'
   location: string
   contact_person?: string
   contact_email?: string | null
@@ -74,7 +74,7 @@ interface JobContextType {
   fetchJobApplications: () => Promise<void>
   fetchCVs: () => Promise<void>
   uploadCV: (file: File, name: string) => Promise<CV>
-  
+
   // methods to speed things uo
   updateApplicationStatus: (id: string, status: JobApplication['status']) => Promise<JobApplication>
   addNotes: (id: string, notes: string) => Promise<JobApplication>

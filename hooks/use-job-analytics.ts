@@ -11,7 +11,7 @@ export const useJobAnalytics = () => {
     const applied = jobApplications.filter((job) => job.status === "APPLIED").length
     const interviewing = jobApplications.filter((job) => job.status === "INTERVIEWING").length
     const offers = jobApplications.filter((job) => job.status === "OFFER_RECEIVED").length
-    const rejected = jobApplications.filter((job) => job.status === "REJECTED").length
+    const rejected = jobApplications.filter((job) => job.status === "OFFER_REJECTED").length
     const archived = jobApplications.filter((job) => job.status === "ARCHIVED").length
 
     const responseRate = total > 0 ? (((interviewing + offers) / total) * 100).toFixed(1) : "0"

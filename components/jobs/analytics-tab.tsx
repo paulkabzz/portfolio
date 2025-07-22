@@ -36,10 +36,10 @@ export const AnalyticsTab = () => {
 
     return Object.entries(weeks)
       .map(([week, count]) => ({
-        week: new Date(week).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        week: new Date(week).toLocaleDateString("en-ZA", { month: "short", day: "numeric" }),
         applications: count,
       }))
-      .slice(-8) // Last 8 weeks
+      .slice(-16) // Last 16 weeks
   }, [jobApplications])
 
   return (

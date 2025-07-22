@@ -34,6 +34,11 @@ const menuItems = [
     icon: User,
   },
   {
+    title: "Jobs",
+    url: "/dashboard/jobs",
+    icon: Briefcase
+  },
+  {
     title: "Messages",
     url: "/dashboard/messages",
     icon: Mail

@@ -11,7 +11,10 @@ export const appwriteConfig = {
     projectCollectionId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_COLLECTION_ID,
     experienceStorageId: process.env.NEXT_PUBLIC_APPWRITE_EXPERIENCE_STORAGE_ID,
     experinceCollectionId: process.env.NEXT_PUBLIC_APPWRITE_EXPERINCE_COLLECTION_ID,
-    messagesCollectionId: process.env.NEXT_PUBLIC_APPWRITE_MESSAGES_COLLECTION_ID
+    messagesCollectionId: process.env.NEXT_PUBLIC_APPWRITE_MESSAGES_COLLECTION_ID,
+    jobApplicationsCollecionId: process.env.NEXT_PUBLIC_APPWRITE_JOB_APPLICATIONS_COLLECTION_ID,
+    cvStorageId: process.env.NEXT_PUBLIC_APPWRITE_CV_STORAGE_ID,
+    cvCollectionId: process.env.NEXT_PUBLIC_APPWRITE_CV_COLLECTION_ID
 } as const;
 
 export const client = new Client();
@@ -30,6 +33,9 @@ if (!appwriteConfig.projectCollectionId)
 
 if (!appwriteConfig.projectCoverStorageId)
     throw new Error("Project Cover Storage ID not set");
+
+if (!appwriteConfig.jobApplicationsCollecionId)
+    throw new Error("Job Applications Collectin ID not set");
 
 client.setProject(appwriteConfig.projectId);
 client.setEndpoint(appwriteConfig.url);

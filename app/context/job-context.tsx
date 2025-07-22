@@ -74,6 +74,17 @@ interface JobContextType {
   fetchJobApplications: () => Promise<void>
   fetchCVs: () => Promise<void>
   uploadCV: (file: File, name: string) => Promise<CV>
+  
+  // methods to speed things uo
+  updateApplicationStatus: (id: string, status: JobApplication['status']) => Promise<JobApplication>
+  addNotes: (id: string, notes: string) => Promise<JobApplication>
+  addFeedback: (id: string, feedback: string) => Promise<JobApplication>
+  editApplication: (id: string, updates: Partial<CreateJobApplicationData>) => Promise<JobApplication>
+  archiveApplication: (id: string) => Promise<JobApplication>
+  markAsUrgent: (id: string, urgent?: boolean) => Promise<JobApplication>
+  markAsFeatured: (id: string, featured?: boolean) => Promise<JobApplication>
+  addInterviewDate: (id: string, interviewDate: string) => Promise<JobApplication>
+  removeInterviewDate: (id: string, interviewDate: string) => Promise<JobApplication>
 }
 
 const JobContext = createContext<JobContextType | undefined>(undefined)
@@ -229,6 +240,63 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // New convenience methods
+  const updateApplicationStatus = async (id: string, status: JobApplication['status']): Promise<JobApplication> => {
+    return updateJobApplication(id, { status })
+  }
+
+  const addNotes = async (id: string, notes: string): Promise<JobApplication> => {
+    const currentApplication = jobApplications.find(app => app.$id === id)
+    const existingNotes = currentApplication?.notes || ''
+    const updatedNotes = existingNotes 
+      ? `${existingNotes}\n\n[${new Date().toLocaleDateString()}] ${notes}` 
+      : `[${new Date().toLocaleDateString()}] ${notes}`
+    
+    return updateJobApplication(id, { notes: updatedNotes })
+  }
+
+  const addFeedback = async (id: string, feedback: string): Promise<JobApplication> => {
+    const currentApplication = jobApplications.find(app => app.$id === id)
+    const existingFeedback = currentApplication?.feedback || ''
+    const updatedFeedback = existingFeedback 
+      ? `${existingFeedback}\n\n[${new Date().toLocaleDateString()}] ${feedback}` 
+      : `[${new Date().toLocaleDateString()}] ${feedback}`
+    
+    return updateJobApplication(id, { feedback: updatedFeedback })
+  }
+
+  const editApplication = async (id: string, updates: Partial<CreateJobApplicationData>): Promise<JobApplication> => {
+    return updateJobApplication(id, updates)
+  }
+
+  const archiveApplication = async (id: string): Promise<JobApplication> => {
+    return updateJobApplication(id, { status: 'ARCHIVED' })
+  }
+
+  const markAsUrgent = async (id: string, urgent: boolean = true): Promise<JobApplication> => {
+    return updateJobApplication(id, { urgent_application: urgent })
+  }
+
+  const markAsFeatured = async (id: string, featured: boolean = true): Promise<JobApplication> => {
+    return updateJobApplication(id, { featured_application: featured })
+  }
+
+  const addInterviewDate = async (id: string, interviewDate: string): Promise<JobApplication> => {
+    const currentApplication = jobApplications.find(app => app.$id === id)
+    const existingDates = currentApplication?.interview_dates || []
+    const updatedDates = [...existingDates, interviewDate]
+    
+    return updateJobApplication(id, { interview_dates: updatedDates })
+  }
+
+  const removeInterviewDate = async (id: string, interviewDate: string): Promise<JobApplication> => {
+    const currentApplication = jobApplications.find(app => app.$id === id)
+    const existingDates = currentApplication?.interview_dates || []
+    const updatedDates = existingDates.filter(date => date !== interviewDate)
+    
+    return updateJobApplication(id, { interview_dates: updatedDates })
+  }
+
   useEffect(() => {
     fetchJobApplications()
     fetchCVs()
@@ -244,7 +312,18 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     deleteJobApplication,
     fetchJobApplications,
     fetchCVs,
-    uploadCV
+    uploadCV,
+
+// methds to for convenience
+    updateApplicationStatus,
+    addNotes,
+    addFeedback,
+    editApplication,
+    archiveApplication,
+    markAsUrgent,
+    markAsFeatured,
+    addInterviewDate,
+    removeInterviewDate
   }
 
   return <JobContext.Provider value={value}>{children}</JobContext.Provider>

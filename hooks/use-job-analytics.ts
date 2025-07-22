@@ -33,7 +33,9 @@ export const useJobAnalytics = () => {
       const month = new Date(job.application_date).toLocaleDateString("en-ZA", {
         month: "short",
         year: "2-digit",
-      })
+      });
+
+      console.log(month)
       acc[month] = (acc[month] || 0) + 1
       return acc
     }, {})

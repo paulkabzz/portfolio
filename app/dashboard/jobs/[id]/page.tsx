@@ -1,9 +1,10 @@
-import React from 'react'
+import { JobDetailPage } from "@/components/job-details/job-details-page";
 
-const Job = () => {
-  return (
-    <div>Job</div>
-  )
+interface JobDetailPageProps {
+  params: Promise<{ id: string }>
 }
 
-export default Job
+export default async function JobDetail({ params }: JobDetailPageProps) {
+  const { id } = await params
+  return <JobDetailPage jobId={id} />
+}

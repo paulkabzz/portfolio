@@ -26,6 +26,17 @@ import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { useMessages } from "@/app/context/messages-context"
 import MessageDetailSkeleton from "@/components/skeletons/message-detail-skeleton"
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger 
+} from "@/components/ui/alert-dialog"
 
 export default function MessageDetailPage() {
   const router = useRouter()
@@ -47,9 +58,11 @@ export default function MessageDetailPage() {
   } = useMessages()
 
   const [message, setMessage] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
+  const [isDeleting, setIsDeleting] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [hasInitiallyFetched, setHasInitiallyFetched] = useState(false)
+  const [hasInitiallyFetched, setHasInitiallyFetched] = useState<boolean>(false)
 
   // Memoise all messages to prevent unnecessary re-renders
   const allMessages = useMemo(() => [...messages, ...archivedMessages], [messages, archivedMessages])
@@ -185,17 +198,31 @@ export default function MessageDetailPage() {
   }, [message, contextArchiveMessage, toast])
 
   const deleteMessage = useCallback(async () => {
+    setIsDeleting(true);
     if (!message) return
-    if (!confirm("Are you sure you want to delete this message? This action cannot be undone.")) {
-      return
+    try {
+      await contextDeleteMessage(message.$id);
+      toast({
+        title: "Message deleted",
+        description: "The message has been deleted successfully.",
+      })
+      router.push("/dashboard/messages")
+    } catch (error) {
+      console.error("Error deleting message:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete message. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
     }
-    await contextDeleteMessage(message.$id)
-    toast({
-      title: "Message deleted",
-      description: "The message has been deleted successfully.",
-    })
-    router.push("/dashboard/messages")
   }, [message, contextDeleteMessage, toast, router])
+
+  const handleDeleteClick = useCallback(() => {
+    setShowDeleteDialog(true)
+  }, [])
 
   const copyToClipboard = useCallback(async (text: string, label: string) => {
     try {
@@ -333,11 +360,11 @@ export default function MessageDetailPage() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => handleAction("delete", deleteMessage)}
-              disabled={!!actionLoading}
+              onClick={handleDeleteClick}
+              disabled={!!actionLoading || isDeleting}
               className="border-red-200 text-red-600 hover:bg-red-50 bg-transparent"
             >
-              {actionLoading === "delete" ? (
+              {isDeleting ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -546,6 +573,39 @@ export default function MessageDetailPage() {
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="sm:max-w-[425px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Message</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this message from "{message?.full_name}"? This action cannot be undone and the message will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={deleteMessage} 
+              disabled={isDeleting} 
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Message"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

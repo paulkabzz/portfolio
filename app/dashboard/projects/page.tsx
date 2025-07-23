@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useProjects } from "@/app/context/project-context"
 import { parseTextWithFormatting } from "@/components/utils"
+import { toast } from "@/hooks/use-toast"
 export default function ProjectsPage() {
-  const { projects, loading } = useProjects();
+  const { projects, loading, removeProject } = useProjects();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProjects = projects.filter(
@@ -31,9 +32,19 @@ export default function ProjectsPage() {
       project.technologies.some((tech) => tech.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
-  const deleteProject = (id: string) => {
-    const updatedProjects = projects.filter((project) => project.id !== id);
-    localStorage.setItem("portfolio-projects", JSON.stringify(updatedProjects));
+  const deleteProject = async (id: string) => {
+    try {
+        await removeProject(id);
+        toast({
+          title: "Project Deleted successfully"
+        });
+    } catch (error) {
+        toast({
+          title: "Failed to delete project",
+          variant: "destructive"
+        });
+        throw error;
+    }
   }
 
   if (loading) return <div>Loading..</div>;

@@ -63,7 +63,7 @@ const statusColumns = [
     description: "Offer received",
   },
   {
-    id: "REJECTED",
+    id: "OFFER_REJECTED",
     title: "Rejected",
     icon: XCircle,
     color: "bg-red-500",
@@ -253,13 +253,13 @@ export const JobKanban: React.FC<JobKanbanProps> = ({ job }) => {
       }
     }
 
-    if (currentStatus === "REJECTED") {
+    if (currentStatus === "OFFER_REJECTED") {
       items.push({
         id: "application-rejected",
         title: "Application Rejected",
         description: job.feedback || "Application was not successful",
         type: "milestone",
-        status: "REJECTED",
+        status: "OFFER_REJECTED",
         completed: true,
       })
     }

@@ -16,6 +16,9 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/app/context/auth-context"
+import { Button } from "./ui/button"
+import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation"
 
 const menuItems = [
   {
@@ -57,7 +60,21 @@ const menuItems = [
 
 export function AppSidebar() {
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+
+  const router = useRouter();
+  const handleLogout = async () => {
+    try {
+        await logout();
+        toast({title: "Logged out successfully"});
+        router.push('/');
+    } catch (error) {
+        toast({
+          title: "Failed to logout",
+          variant: "destructive"
+        })
+    }
+  }
   return (
     <Sidebar className="border-r border-secondary">
       <SidebarHeader className="border-b border-secondary p-4">
@@ -83,6 +100,9 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <Button onClick={handleLogout}>
+                  Log Out
+              </Button>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

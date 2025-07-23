@@ -28,19 +28,27 @@ export const useJobAnalytics = () => {
       return acc
     }, {})
 
-    // Monthly application trend
-    const monthlyTrend = jobApplications.reduce<Record<string, number>>((acc, job) => {
-      const month = new Date(job.application_date).toLocaleDateString("en-ZA", {
-        month: "short",
-        year: "2-digit",
-      });
+    // Daily application trend over the last 365 days
+    const today = new Date()
+    const oneYearAgo = new Date(today)
+    oneYearAgo.setFullYear(today.getFullYear() - 1)
 
-      console.log(month)
-      acc[month] = (acc[month] || 0) + 1
-      return acc
-    }, {})
+    // Create a map of all days in the last 365 days with 0 applications
+    const dailyTrend: Record<string, number> = {}
+    for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
+      const dateKey = d.toISOString().split('T')[0] // Format: YYYY-MM-DD
+      dailyTrend[dateKey] = 0
+    }
 
-    // Chart data
+    // Count applications for each day
+    jobApplications.forEach((job) => {
+      const applicationDate = new Date(job.application_date)
+      if (applicationDate >= oneYearAgo && applicationDate <= today) {
+        const dateKey = applicationDate.toISOString().split('T')[0]
+        dailyTrend[dateKey] = (dailyTrend[dateKey] || 0) + 1
+      }
+    })
+
     const statusChartData = Object.entries(statusDistribution).map(([status, count]) => ({
       status: status.replace("_", " "),
       count,
@@ -53,17 +61,29 @@ export const useJobAnalytics = () => {
       percentage: ((count / total) * 100).toFixed(1),
     }))
 
-    const trendChartData = Object.entries(monthlyTrend)
-      .map(([month, count]) => ({
-        month,
-        applications: count,
-      }))
-      .sort((a, b) => {
-        // Sort by date
-        const dateA = new Date(a.month + " 01")
-        const dateB = new Date(b.month + " 01")
-        return dateA.getTime() - dateB.getTime()
-      })
+    // Convert daily trend to chart data, grouping by week for better visualisation
+    const trendChartData = Object.entries(dailyTrend)
+      .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
+      .reduce<Array<{ week: string; applications: number }>>((acc, [date, count], index) => {
+        const weekIndex = Math.floor(index / 7)
+        const weekStart = new Date(date)
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() || 7) + 1)
+        const weekLabel = weekStart.toLocaleDateString("en-ZA", {
+          month: "short",
+          day: "numeric",
+        })
+
+        if (!acc[weekIndex]) {
+          acc[weekIndex] = {
+            week: weekLabel,
+            applications: 0
+          }
+        }
+
+        acc[weekIndex].applications += count
+        return acc
+      }, [])
+      .filter(Boolean)
 
     return {
       total,

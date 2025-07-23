@@ -172,19 +172,21 @@ export const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
 
         {/* Feedback */}
         {job.feedback && (
-          <Card className="border-secondary">
+        <Card className="border-secondary">
             <CardHeader>
-              <CardTitle className="text-primary flex items-center gap-2">
+            <CardTitle className="text-primary flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 Feedback
-              </CardTitle>
+            </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                <p className="text-primary/80 leading-relaxed">{job.feedback}</p>
-              </div>
+            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <div className="text-primary/80 leading-relaxed text-sm whitespace-pre-wrap">
+                {job.feedback}
+                </div>
+            </div>
             </CardContent>
-          </Card>
+        </Card>
         )}
       </div>
 

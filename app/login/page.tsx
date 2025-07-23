@@ -1,6 +1,5 @@
 "use client";
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; 
 import styles from './index.module.css';
 import { useAuth } from '../context/auth-context';
 
@@ -11,7 +10,6 @@ const Login: React.FC = (): React.ReactElement => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
   const { login } = useAuth();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,7 +18,9 @@ const Login: React.FC = (): React.ReactElement => {
     
     try {
       await login(email, password);
-      router.push('/dashboard');
+
+      // force site to reload when log in
+      window.location.href = '/dashboard';
     } catch (error: any) {
       setError(error.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -72,18 +72,7 @@ const Login: React.FC = (): React.ReactElement => {
               required
             />
           </div>
-          
-          <div className={styles.options}>
-            <label className={styles.checkbox}>
-              <input type="checkbox" />
-              <span className={styles.checkmark}></span>
-              Remember me
-            </label>
-            <a href="#" className={styles.forgotPassword}>
-              Forgot password?
-            </a>
-          </div>
-          
+   
           <button
             type="submit"
             disabled={isLoading}
@@ -96,15 +85,7 @@ const Login: React.FC = (): React.ReactElement => {
             )}
           </button>
         </form>
-        
-        <div className={styles.footer}>
-          <p>
-            Don't have an account?{' '}
-            <a href="#" className={styles.signupLink}>
-              Sign up
-            </a>
-          </p>
-        </div>
+
       </div>
     </div>
   );

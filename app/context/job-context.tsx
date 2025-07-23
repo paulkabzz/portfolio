@@ -18,7 +18,7 @@ interface JobApplication {
   company_name: string
   job_url?: string
   application_date: string
-  status: 'APPLIED' | 'INTERVIEWING' | 'OFFER_RECEIVED' | 'OFFER_REJECTED' | 'ARCHIVED'
+  status: 'APPLIED' | 'INTERVIEWING' | 'OFFER_RECEIVED' | 'REJECTED' | 'ARCHIVED'
   location: string
   contact_person?: string
   contact_email?: string
@@ -44,7 +44,7 @@ interface CreateJobApplicationData {
   company_name: string
   job_url?: string
   application_date: string
-  status: 'APPLIED' | 'INTERVIEWING' | 'OFFER_RECEIVED' | 'OFFER_REJECTED' | 'ARCHIVED'
+  status: 'APPLIED' | 'INTERVIEWING' | 'OFFER_RECEIVED' | 'REJECTED' | 'ARCHIVED'
   location: string
   contact_person?: string
   contact_email?: string | null

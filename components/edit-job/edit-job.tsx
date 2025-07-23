@@ -73,7 +73,7 @@ export const EditJobApplicationPage: React.FC<EditJobApplicationPageProps> = ({ 
     company_name: "",
     job_url: "",
     application_date: "",
-    status: "APPLIED" as "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "OFFER_REJECTED" | "ARCHIVED",
+    status: "APPLIED" as "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "REJECTED" | "ARCHIVED",
     location: "",
     contact_person: "",
     contact_email: null as string | null,
@@ -454,7 +454,7 @@ export const EditJobApplicationPage: React.FC<EditJobApplicationPageProps> = ({ 
                     </Label>
                     <Select
                       value={formData.status}
-                      onValueChange={(value: "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "OFFER_REJECTED" | "ARCHIVED") =>
+                      onValueChange={(value: "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "REJECTED" | "ARCHIVED") =>
                         setFormData({ ...formData, status: value })
                       }
                       disabled={isSubmitting}

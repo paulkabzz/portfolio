@@ -47,7 +47,7 @@ export default function NewJobApplicationPage() {
     company_name: "",
     job_url: "",
     application_date: "",
-    status: "APPLIED" as "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "OFFER_REJECTED" | "ARCHIVED",
+    status: "APPLIED" as "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "REJECTED" | "ARCHIVED",
     location: "",
     contact_person: "",
     contact_email: null,
@@ -287,7 +287,7 @@ export default function NewJobApplicationPage() {
                     </Label>
                     <Select
                       value={formData.status}
-                      onValueChange={(value: "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "OFFER_REJECTED" | "ARCHIVED") => 
+                      onValueChange={(value: "APPLIED" | "INTERVIEWING" | "OFFER_RECEIVED" | "REJECTED" | "ARCHIVED") => 
                         setFormData({ ...formData, status: value })
                       }
                       disabled={isSubmitting}

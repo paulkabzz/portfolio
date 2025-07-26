@@ -3,6 +3,10 @@
 
 This project is a personal portfolio website built with Next.js, designed to showcase your projects and work experience with an integrated admin dashboard for easy content management. It's bootstrapped with `create-next-app` and uses Appwrite as a backend for data storage and authentication.
 
+## Demo Video
+
+[![Demo Video](https://img.youtube.com/vi/d25cCiEL8uo/hqdefault.jpg)](https://www.youtube.com/watch?v=d25cCiEL8uo)
+
 ## Features
 
   * **Responsive Design**: The website is built to be responsive and work seamlessly across various devices.

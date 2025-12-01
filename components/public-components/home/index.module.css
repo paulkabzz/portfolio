@@ -80,3 +80,31 @@
     object-fit: cover;
     position: absolute;
 }
+
+@media screen and (max-width: 1300px) {
+    .imageContainer {
+        width: 250px;
+        height: 250px;
+    }
+
+    .occupation {
+        font-size: 1rem;
+    }
+}
+
+@media screen and (max-width: 980px) {
+    .container {
+        flex-direction: column;
+        margin-top: 1.5rem;
+    }
+
+    .imageSection {
+        justify-items: center;
+        width: 100%;
+        display: block;
+    }
+
+    .textContainer {
+        
+    }
+}

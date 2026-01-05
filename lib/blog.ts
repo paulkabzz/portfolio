@@ -108,12 +108,10 @@ function extractFileIdFromUrl(url: string): string | null {
   }
 }
 
-// Create a new blog
 export async function createBlog(data: CreateBlogData): Promise<Blog> {
   try {
     let coverImageUrl = '';
     
-    // Upload cover image if provided
     if (data.cover_image) {
       coverImageUrl = await uploadBlogImage(data.cover_image);
     }

@@ -29,18 +29,19 @@ import {
   ChevronUp,
   ChevronDown,
 } from 'lucide-react'
-import { BlogContentBlock, uploadBlogImage } from '@/lib/blog'
+import { BlogContentBlock, uploadBlogImage, CustomFont, DEFAULT_FONTS } from '@/lib/blog'
 import { useToast } from '@/hooks/use-toast'
 
 interface BlogContentEditorProps {
   content: BlogContentBlock[]
   onChange: (content: BlogContentBlock[]) => void
+  customFonts?: CustomFont[]
   disabled?: boolean
 }
 
 const generateBlockId = () => `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-export function BlogContentEditor({ content, onChange, disabled = false }: BlogContentEditorProps) {
+export function BlogContentEditor({ content, onChange, customFonts = [], disabled = false }: BlogContentEditorProps) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadingBlockId, setUploadingBlockId] = useState<string | null>(null)
@@ -184,37 +185,91 @@ export function BlogContentEditor({ content, onChange, disabled = false }: BlogC
 
           {/* Block Content */}
           {block.type === 'paragraph' && (
-            <Textarea
-              value={block.content}
-              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-              placeholder="Write your paragraph here... Use **bold**, ~italic~, {{green text}}, [[&quot;url&quot;: link text]]"
-              rows={4}
-              className="border-secondary focus:border-green resize-none"
-              disabled={disabled}
-            />
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label className="text-sm text-primary/70">Font:</Label>
+                <Select
+                  value={block.props?.fontFamily || 'inherit'}
+                  onValueChange={(value) => updateBlockProps(block.id, { fontFamily: value })}
+                  disabled={disabled}
+                >
+                  <SelectTrigger className="w-40 border-secondary">
+                    <SelectValue placeholder="Default" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DEFAULT_FONTS.map((font) => (
+                      <SelectItem key={font.name} value={font.value}>
+                        {font.name}
+                      </SelectItem>
+                    ))}
+                    {customFonts.map((font) => (
+                      <SelectItem key={font.name} value={font.fontFamily}>
+                        {font.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Textarea
+                value={block.content}
+                onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                placeholder="Write your paragraph here... Use **bold**, ~italic~, {{green text}}, [[&quot;url&quot;: link text]]"
+                rows={4}
+                className="border-secondary focus:border-green resize-none"
+                style={block.props?.fontFamily ? { fontFamily: block.props.fontFamily } : undefined}
+                disabled={disabled}
+              />
+            </div>
           )}
 
           {block.type === 'heading' && (
             <div className="space-y-2">
-              <Select
-                value={String(block.props?.level || 2)}
-                onValueChange={(value) => updateBlockProps(block.id, { level: parseInt(value) as 1 | 2 | 3 })}
-                disabled={disabled}
-              >
-                <SelectTrigger className="w-32 border-secondary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Heading 1</SelectItem>
-                  <SelectItem value="2">Heading 2</SelectItem>
-                  <SelectItem value="3">Heading 3</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-3">
+                <Select
+                  value={String(block.props?.level || 2)}
+                  onValueChange={(value) => updateBlockProps(block.id, { level: parseInt(value) as 1 | 2 | 3 })}
+                  disabled={disabled}
+                >
+                  <SelectTrigger className="w-32 border-secondary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Heading 1</SelectItem>
+                    <SelectItem value="2">Heading 2</SelectItem>
+                    <SelectItem value="3">Heading 3</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-primary/70">Font:</Label>
+                  <Select
+                    value={block.props?.fontFamily || 'inherit'}
+                    onValueChange={(value) => updateBlockProps(block.id, { fontFamily: value })}
+                    disabled={disabled}
+                  >
+                    <SelectTrigger className="w-40 border-secondary">
+                      <SelectValue placeholder="Default" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DEFAULT_FONTS.map((font) => (
+                        <SelectItem key={font.name} value={font.value}>
+                          {font.name}
+                        </SelectItem>
+                      ))}
+                      {customFonts.map((font) => (
+                        <SelectItem key={font.name} value={font.fontFamily}>
+                          {font.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <Input
                 value={block.content}
                 onChange={(e) => updateBlock(block.id, { content: e.target.value })}
                 placeholder="Heading text..."
                 className="border-secondary focus:border-green text-lg font-semibold"
+                style={block.props?.fontFamily ? { fontFamily: block.props.fontFamily } : undefined}
                 disabled={disabled}
               />
             </div>
@@ -349,14 +404,41 @@ export function BlogContentEditor({ content, onChange, disabled = false }: BlogC
           )}
 
           {block.type === 'quote' && (
-            <Textarea
-              value={block.content}
-              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-              placeholder="Enter quote text..."
-              rows={3}
-              className="border-secondary focus:border-green italic resize-none"
-              disabled={disabled}
-            />
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label className="text-sm text-primary/70">Font:</Label>
+                <Select
+                  value={block.props?.fontFamily || 'inherit'}
+                  onValueChange={(value) => updateBlockProps(block.id, { fontFamily: value })}
+                  disabled={disabled}
+                >
+                  <SelectTrigger className="w-40 border-secondary">
+                    <SelectValue placeholder="Default" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DEFAULT_FONTS.map((font) => (
+                      <SelectItem key={font.name} value={font.value}>
+                        {font.name}
+                      </SelectItem>
+                    ))}
+                    {customFonts.map((font) => (
+                      <SelectItem key={font.name} value={font.fontFamily}>
+                        {font.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Textarea
+                value={block.content}
+                onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                placeholder="Enter quote text..."
+                rows={3}
+                className="border-secondary focus:border-green italic resize-none"
+                style={block.props?.fontFamily ? { fontFamily: block.props.fontFamily } : undefined}
+                disabled={disabled}
+              />
+            </div>
           )}
         </CardContent>
       </Card>

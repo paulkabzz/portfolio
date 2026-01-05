@@ -12,9 +12,10 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Upload, X, Plus, Loader2, Eye, Edit3 } from "lucide-react"
 import { useBlogs } from "@/app/context/blog-context"
-import { BlogContentBlock, generateSlug } from "@/lib/blog"
+import { BlogContentBlock, CustomFont, generateSlug } from "@/lib/blog"
 import { BlogContentEditor } from "@/components/blog-content-editor"
 import { BlogContentRenderer } from "@/components/blog-content-renderer"
+import { CustomFontsManager } from "@/components/custom-fonts-manager"
 import { useToast } from "@/hooks/use-toast"
 
 export default function NewBlogPage() {
@@ -34,6 +35,7 @@ export default function NewBlogPage() {
   const [content, setContent] = useState<BlogContentBlock[]>([])
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
+  const [customFonts, setCustomFonts] = useState<CustomFont[]>([])
   const [coverImage, setCoverImage] = useState<File | null>(null)
   const [coverImagePreview, setCoverImagePreview] = useState("")
 
@@ -127,6 +129,7 @@ export default function NewBlogPage() {
         tags,
         published: formData.published,
         cover_image: coverImage || undefined,
+        custom_fonts: customFonts,
       })
 
       toast({
@@ -243,11 +246,12 @@ export default function NewBlogPage() {
                   <BlogContentEditor
                     content={content}
                     onChange={setContent}
+                    customFonts={customFonts}
                     disabled={isSubmitting}
                   />
                 ) : (
                   <div className="min-h-[200px] p-4 bg-gray-50 rounded-lg">
-                    <BlogContentRenderer content={content} />
+                    <BlogContentRenderer content={content} customFonts={customFonts} />
                   </div>
                 )}
               </CardContent>
@@ -345,6 +349,12 @@ export default function NewBlogPage() {
                 )}
               </CardContent>
             </Card>
+
+            <CustomFontsManager
+              fonts={customFonts}
+              onChange={setCustomFonts}
+              disabled={isSubmitting}
+            />
 
             <Card className="border-secondary">
               <CardHeader>

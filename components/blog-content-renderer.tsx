@@ -1,15 +1,16 @@
 "use client"
 
 import React from 'react'
-import { BlogContentBlock } from '@/lib/blog'
+import { BlogContentBlock, CustomFont } from '@/lib/blog'
 import { parseTextWithFormatting } from '@/components/utils'
 
 interface BlogContentRendererProps {
   content: BlogContentBlock[]
+  customFonts?: CustomFont[]
   className?: string
 }
 
-export function BlogContentRenderer({ content, className = '' }: BlogContentRendererProps) {
+export function BlogContentRenderer({ content, customFonts = [], className = '' }: BlogContentRendererProps) {
   const getImageSizeClass = (size?: string) => {
     switch (size) {
       case 'small':
@@ -38,10 +39,18 @@ export function BlogContentRenderer({ content, className = '' }: BlogContentRend
   }
 
   const renderBlock = (block: BlogContentBlock, index: number) => {
+    const fontStyle = block.props?.fontFamily && block.props.fontFamily !== 'inherit'
+      ? { fontFamily: block.props.fontFamily } 
+      : undefined
+
     switch (block.type) {
       case 'paragraph':
         return (
-          <p key={block.id || index} className="text-primary/80 leading-relaxed mb-4">
+          <p 
+            key={block.id || index} 
+            className="text-primary/80 leading-relaxed mb-4"
+            style={fontStyle}
+          >
             {parseTextWithFormatting(block.content)}
           </p>
         )
@@ -54,7 +63,11 @@ export function BlogContentRenderer({ content, className = '' }: BlogContentRend
           h3: 'text-xl font-semibold text-primary mb-2 mt-4',
         }
         return (
-          <HeadingTag key={block.id || index} className={headingClasses[HeadingTag]}>
+          <HeadingTag 
+            key={block.id || index} 
+            className={headingClasses[HeadingTag]}
+            style={fontStyle}
+          >
             {parseTextWithFormatting(block.content)}
           </HeadingTag>
         )
@@ -98,6 +111,7 @@ export function BlogContentRenderer({ content, className = '' }: BlogContentRend
           <blockquote 
             key={block.id || index} 
             className="my-6 pl-4 border-l-4 border-green italic text-primary/70"
+            style={fontStyle}
           >
             {parseTextWithFormatting(block.content)}
           </blockquote>
@@ -117,8 +131,16 @@ export function BlogContentRenderer({ content, className = '' }: BlogContentRend
   }
 
   return (
-    <div className={`blog-content ${className}`}>
-      {content.map((block, index) => renderBlock(block, index))}
-    </div>
+    <>
+      {/* Inject custom font imports */}
+      {customFonts.length > 0 && (
+        <style>
+          {customFonts.map((font) => `@import url('${font.importUrl}');`).join('\n')}
+        </style>
+      )}
+      <div className={`blog-content ${className}`}>
+        {content.map((block, index) => renderBlock(block, index))}
+      </div>
+    </>
   )
 }

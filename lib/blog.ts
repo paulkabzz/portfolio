@@ -1,6 +1,16 @@
 import { ID, Query } from 'appwrite';
 import { databases, storage, appwriteConfig } from './appwrite';
 
+// Default fonts available without import
+export const DEFAULT_FONTS = [
+  { name: 'Default', value: 'inherit' },
+  { name: 'Inter', value: 'Inter, sans-serif' },
+  { name: 'Georgia', value: 'Georgia, serif' },
+  { name: 'Courier New', value: '"Courier New", monospace' },
+  { name: 'Arial', value: 'Arial, sans-serif' },
+  { name: 'Times New Roman', value: '"Times New Roman", serif' },
+];
+
 // Content block types for rich blog editing
 export interface BlogContentBlock {
   id: string;
@@ -12,7 +22,15 @@ export interface BlogContentBlock {
     alignment?: 'left' | 'center' | 'right';
     caption?: string;
     language?: string;  // For code blocks
+    fontFamily?: string;  // Custom font for text blocks
   };
+}
+
+// Custom font import (e.g., from Google Fonts)
+export interface CustomFont {
+  name: string;      // Display name, e.g. "Playfair Display"
+  importUrl: string; // Full URL, e.g. "https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap"
+  fontFamily: string; // CSS font-family value, e.g. "'Playfair Display', serif"
 }
 
 export interface Blog {
@@ -24,7 +42,8 @@ export interface Blog {
   cover_image: string;
   tags: string[];
   published: boolean;
-  published_at: string | null;
+  publishedAt: string | null;
+  custom_fonts: CustomFont[];  // Custom font imports for this blog
   createdAt: string;
   updatedAt: string;
 }
@@ -37,6 +56,7 @@ export interface CreateBlogData {
   tags: string[];
   published: boolean;
   cover_image?: File;
+  custom_fonts?: CustomFont[];
 }
 
 // Helper function to generate slug from title
@@ -95,7 +115,8 @@ export async function createBlog(data: CreateBlogData): Promise<Blog> {
       cover_image: coverImageUrl,
       tags: data.tags,
       published: data.published,
-      published_at: data.published ? new Date().toISOString() : null,
+      publishedAt: data.published ? new Date().toISOString() : null,
+      custom_fonts: JSON.stringify(data.custom_fonts || []),
     };
 
     const blog = await databases.createDocument(
@@ -114,7 +135,8 @@ export async function createBlog(data: CreateBlogData): Promise<Blog> {
       cover_image: blog.cover_image,
       tags: blog.tags || [],
       published: blog.published,
-      published_at: blog.published_at,
+      publishedAt: blog.publishedAt,
+      custom_fonts: JSON.parse(blog.custom_fonts || '[]'),
       createdAt: blog.$createdAt,
       updatedAt: blog.$updatedAt,
     };
@@ -142,7 +164,8 @@ export async function getBlogs(): Promise<Blog[]> {
       cover_image: doc.cover_image,
       tags: doc.tags || [],
       published: doc.published,
-      published_at: doc.published_at,
+      publishedAt: doc.publishedAt,
+      custom_fonts: JSON.parse(doc.custom_fonts || '[]'),
       createdAt: doc.$createdAt,
       updatedAt: doc.$updatedAt,
     })) as Blog[];
@@ -170,7 +193,8 @@ export async function getBlog(id: string): Promise<Blog | null> {
       cover_image: blog.cover_image,
       tags: blog.tags || [],
       published: blog.published,
-      published_at: blog.published_at,
+      publishedAt: blog.publishedAt,
+      custom_fonts: JSON.parse(blog.custom_fonts || '[]'),
       createdAt: blog.$createdAt,
       updatedAt: blog.$updatedAt,
     };
@@ -203,7 +227,8 @@ export async function getBlogBySlug(slug: string): Promise<Blog | null> {
       cover_image: doc.cover_image,
       tags: doc.tags || [],
       published: doc.published,
-      published_at: doc.published_at,
+      publishedAt: doc.publishedAt,
+      custom_fonts: JSON.parse(doc.custom_fonts || '[]'),
       createdAt: doc.$createdAt,
       updatedAt: doc.$updatedAt,
     };
@@ -223,13 +248,14 @@ export async function updateBlog(id: string, data: Partial<CreateBlogData>): Pro
     if (data.excerpt !== undefined) updateData.excerpt = data.excerpt;
     if (data.content !== undefined) updateData.content = JSON.stringify(data.content);
     if (data.tags !== undefined) updateData.tags = data.tags;
+    if (data.custom_fonts !== undefined) updateData.custom_fonts = JSON.stringify(data.custom_fonts);
     if (data.published !== undefined) {
       updateData.published = data.published;
       if (data.published) {
-        // Set published_at if publishing for the first time
+        // Set publishedAt if publishing for the first time
         const existingBlog = await getBlog(id);
-        if (existingBlog && !existingBlog.published_at) {
-          updateData.published_at = new Date().toISOString();
+        if (existingBlog && !existingBlog.publishedAt) {
+          updateData.publishedAt = new Date().toISOString();
         }
       }
     }
@@ -271,7 +297,8 @@ export async function updateBlog(id: string, data: Partial<CreateBlogData>): Pro
       cover_image: updatedBlog.cover_image,
       tags: updatedBlog.tags || [],
       published: updatedBlog.published,
-      published_at: updatedBlog.published_at,
+      publishedAt: updatedBlog.publishedAt,
+      custom_fonts: JSON.parse(updatedBlog.custom_fonts || '[]'),
       createdAt: updatedBlog.$createdAt,
       updatedAt: updatedBlog.$updatedAt,
     };

@@ -14,7 +14,7 @@ export const DEFAULT_FONTS = [
 // Content block types for rich blog editing
 export interface BlogContentBlock {
   id: string;
-  type: 'paragraph' | 'heading' | 'image' | 'code' | 'quote' | 'video' | 'embed';
+  type: 'paragraph' | 'heading' | 'image' | 'code' | 'quote' | 'video' | 'embed' | 'columns';
   content: string;
   props?: {
     level?: 1 | 2 | 3;  // For headings
@@ -28,7 +28,13 @@ export interface BlogContentBlock {
     autoplay?: boolean;
     // Embed specific
     embedType?: 'youtube' | 'vimeo' | 'twitter' | 'custom';
+    // Columns specific
+    columnCount?: 2 | 3;  // Number of columns
+    columnGap?: 'small' | 'medium' | 'large';  // Gap between columns
+    verticalAlign?: 'top' | 'center' | 'bottom';  // Vertical alignment
   };
+  // For columns block - contains child blocks for each column
+  children?: BlogContentBlock[][];
 }
 
 // Custom font import (e.g., from Google Fonts)

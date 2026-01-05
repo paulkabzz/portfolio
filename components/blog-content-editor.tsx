@@ -31,6 +31,7 @@ import {
   Video,
   Play,
   Link as LinkIcon,
+  Columns,
 } from 'lucide-react'
 import { BlogContentBlock, uploadBlogImage, CustomFont, DEFAULT_FONTS } from '@/lib/blog'
 import { useToast } from '@/hooks/use-toast'
@@ -84,6 +85,9 @@ export function BlogContentEditor({ content, onChange, customFonts = [], disable
       newBlock.props = { size: 'large', alignment: 'center', aspectRatio: '16:9', caption: '', ...props }
     } else if (type === 'embed') {
       newBlock.props = { size: 'large', alignment: 'center', aspectRatio: '16:9', embedType: 'youtube', ...props }
+    } else if (type === 'columns') {
+      newBlock.props = { columnCount: 2, columnGap: 'medium', verticalAlign: 'top', ...props }
+      newBlock.children = [[], []]  // Start with 2 empty columns
     }
 
     onChange([...content, newBlock])
@@ -665,6 +669,118 @@ export function BlogContentEditor({ content, onChange, customFonts = [], disable
               />
             </div>
           )}
+
+          {block.type === 'columns' && (
+            <div className="space-y-4">
+              {/* Column Controls */}
+              <div className="flex flex-wrap gap-3 pb-3 border-b border-secondary">
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-primary/70">Columns:</Label>
+                  <Select
+                    value={String(block.props?.columnCount || 2)}
+                    onValueChange={(value) => {
+                      const count = parseInt(value) as 2 | 3
+                      const currentChildren = block.children || [[], []]
+                      let newChildren = [...currentChildren]
+                      
+                      if (count === 3 && newChildren.length < 3) {
+                        newChildren.push([])
+                      } else if (count === 2 && newChildren.length > 2) {
+                        newChildren = newChildren.slice(0, 2)
+                      }
+                      
+                      onChange(content.map(b => 
+                        b.id === block.id 
+                          ? { ...b, props: { ...b.props, columnCount: count }, children: newChildren }
+                          : b
+                      ))
+                    }}
+                    disabled={disabled}
+                  >
+                    <SelectTrigger className="w-20 border-secondary">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-primary/70">Gap:</Label>
+                  <Select
+                    value={block.props?.columnGap || 'medium'}
+                    onValueChange={(value) => updateBlockProps(block.id, { columnGap: value as 'small' | 'medium' | 'large' })}
+                    disabled={disabled}
+                  >
+                    <SelectTrigger className="w-24 border-secondary">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="small">Small</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="large">Large</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-primary/70">Align:</Label>
+                  <Select
+                    value={block.props?.verticalAlign || 'top'}
+                    onValueChange={(value) => updateBlockProps(block.id, { verticalAlign: value as 'top' | 'center' | 'bottom' })}
+                    disabled={disabled}
+                  >
+                    <SelectTrigger className="w-24 border-secondary">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="top">Top</SelectItem>
+                      <SelectItem value="center">Center</SelectItem>
+                      <SelectItem value="bottom">Bottom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Column Content Editors */}
+              <div className={`grid gap-4 ${block.props?.columnCount === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                {(block.children || [[], []]).map((columnBlocks, colIndex) => (
+                  <div key={colIndex} className="border border-secondary/50 rounded-lg p-3 bg-secondary/10">
+                    <div className="text-xs font-medium text-primary/60 mb-2">Column {colIndex + 1}</div>
+                    <Textarea
+                      value={columnBlocks[0]?.content || ''}
+                      onChange={(e) => {
+                        const newChildren = [...(block.children || [[], []])]
+                        if (!newChildren[colIndex]) newChildren[colIndex] = []
+                        if (newChildren[colIndex].length === 0) {
+                          newChildren[colIndex] = [{
+                            id: generateBlockId(),
+                            type: 'paragraph',
+                            content: e.target.value,
+                          }]
+                        } else {
+                          newChildren[colIndex][0] = { ...newChildren[colIndex][0], content: e.target.value }
+                        }
+                        onChange(content.map(b => 
+                          b.id === block.id ? { ...b, children: newChildren } : b
+                        ))
+                      }}
+                      placeholder={`Column ${colIndex + 1} content...
+
+Use formatting:
+**bold** ~italic~ {{green}}`}
+                      rows={6}
+                      className="border-secondary focus:border-green resize-none text-sm"
+                      disabled={disabled}
+                    />
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-primary/50">Tip: Each column supports text formatting. For images, use separate Image blocks above or below.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     )
@@ -754,6 +870,17 @@ export function BlogContentEditor({ content, onChange, customFonts = [], disable
         >
           <Play className="h-4 w-4 mr-1" />
           Embed
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => addBlock('columns')}
+          disabled={disabled}
+          className="border-secondary bg-transparent"
+        >
+          <Columns className="h-4 w-4 mr-1" />
+          Columns
         </Button>
       </div>
     </div>

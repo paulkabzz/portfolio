@@ -211,6 +211,36 @@ export function BlogContentRenderer({ content, customFonts = [], className = '' 
           </figure>
         )
 
+      case 'columns':
+        const gapClass = {
+          small: 'gap-4',
+          medium: 'gap-6',
+          large: 'gap-10',
+        }[block.props?.columnGap || 'medium']
+        
+        const alignClass = {
+          top: 'items-start',
+          center: 'items-center',
+          bottom: 'items-end',
+        }[block.props?.verticalAlign || 'top']
+
+        const colsClass = block.props?.columnCount === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'
+        
+        return (
+          <div 
+            key={block.id || index} 
+            className={`grid grid-cols-1 ${colsClass} ${gapClass} ${alignClass} my-6`}
+          >
+            {(block.children || []).map((columnBlocks, colIndex) => (
+              <div key={colIndex}>
+                {columnBlocks.map((childBlock, childIndex) => 
+                  renderBlock(childBlock, childIndex)
+                )}
+              </div>
+            ))}
+          </div>
+        )
+
       default:
         return null
     }

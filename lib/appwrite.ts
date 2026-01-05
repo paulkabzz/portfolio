@@ -14,7 +14,9 @@ export const appwriteConfig = {
     messagesCollectionId: process.env.NEXT_PUBLIC_APPWRITE_MESSAGES_COLLECTION_ID,
     jobApplicationsCollecionId: process.env.NEXT_PUBLIC_APPWRITE_JOB_APPLICATIONS_COLLECTION_ID,
     cvStorageId: process.env.NEXT_PUBLIC_APPWRITE_CV_STORAGE_ID,
-    cvCollectionId: process.env.NEXT_PUBLIC_APPWRITE_CV_COLLECTION_ID
+    cvCollectionId: process.env.NEXT_PUBLIC_APPWRITE_CV_COLLECTION_ID,
+    blogCollectionId: process.env.NEXT_PUBLIC_APPWRITE_BLOG_COLLECTION_ID,
+    blogStorageId: process.env.NEXT_PUBLIC_APPWRITE_BLOG_STORAGE_ID,
 } as const;
 
 export const client = new Client();

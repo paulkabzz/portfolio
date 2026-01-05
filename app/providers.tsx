@@ -8,6 +8,7 @@ import { ToastProvider } from "@radix-ui/react-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { MessagesProvider } from "./context/messages-context";
 import { JobProvider } from "./context/job-context";
+import { BlogProvider } from "./context/blog-context";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
@@ -18,7 +19,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <Toaster />
             <MessagesProvider>
                 <JobProvider>
-                  {children}
+                  <BlogProvider>
+                    {children}
+                  </BlogProvider>
                 </JobProvider>
             </MessagesProvider>
           </ExperienceProvider>

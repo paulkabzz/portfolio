@@ -2,7 +2,7 @@
 
 import Hero from "@/components/public-components/home/hero";
 import HeroSkeleton from "@/components/public-components/home/hero-skeleton";
-import NavBar, { NavLink } from "@/components/public-components/navbar/navbar";
+import NavBar from "@/components/public-components/navbar/navbar";
 import { toast } from "@/hooks/use-toast";
 import { appwriteConfig, databases } from "@/lib/appwrite";
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ import Projects from "@/components/public-components/projects/projects";
 import Experience from "@/components/public-components/experience/experience";
 import Contact from "@/components/public-components/contact/contact";
 import Footer from "@/components/public-components/footer/footer";
+import { publicNavLinks } from "@/lib/nav-config";
 
 export default function Home() {
 
@@ -62,32 +63,9 @@ export default function Home() {
     }
   }
 
-  const links: NavLink[] = [
-    {
-        label: "About",
-        href: "#about"
-    },
-    {
-        label: "Projects",
-        href: "#projects"
-    },
-    // {
-    //     label: "Education",
-    //     href: "#education"
-    // },
-    {
-        label: "Experience",
-        href: "#experience"
-    },
-    {
-        label: "Contact",
-        href: "#contact"
-    }
-  ];
-
   return (
     <div className="">
-        <NavBar links={links} name={personalInfo?.name || "Name"}/>
+        <NavBar links={publicNavLinks} name={personalInfo?.name || "Name"}/>
         
         {isLoading ? (
           <HeroSkeleton />

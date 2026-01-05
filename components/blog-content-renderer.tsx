@@ -4,6 +4,35 @@ import React from 'react'
 import { BlogContentBlock, CustomFont } from '@/lib/blog'
 import { parseTextWithFormatting } from '@/components/utils'
 
+// Helper to extract embed ID from various URL formats
+const extractEmbedId = (url: string, embedType: string): string => {
+  if (!url) return ''
+  
+  if (embedType === 'youtube') {
+    // Already a video ID (11 characters)
+    if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url
+    // Standard YouTube URL patterns
+    const ytPatterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+    ]
+    for (const pattern of ytPatterns) {
+      const match = url.match(pattern)
+      if (match) return match[1]
+    }
+  }
+  
+  if (embedType === 'vimeo') {
+    // Vimeo video ID
+    const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+    if (vimeoMatch) return vimeoMatch[1]
+    // Already just a number
+    if (/^\d+$/.test(url)) return url
+  }
+  
+  return url
+}
+
 interface BlogContentRendererProps {
   content: BlogContentBlock[]
   customFonts?: CustomFont[]
@@ -115,6 +144,71 @@ export function BlogContentRenderer({ content, customFonts = [], className = '' 
           >
             {parseTextWithFormatting(block.content)}
           </blockquote>
+        )
+
+      case 'video':
+        if (!block.content) return null
+        return (
+          <figure 
+            key={block.id || index} 
+            className={`my-6 ${getImageSizeClass(block.props?.size)} ${getImageAlignmentClass(block.props?.alignment)}`}
+          >
+            <video
+              src={block.content}
+              controls
+              className="w-full rounded-lg"
+              style={{ aspectRatio: block.props?.aspectRatio?.replace(':', '/') || '16/9' }}
+            />
+            {block.props?.caption && (
+              <figcaption className="text-center text-sm text-primary/60 mt-2 italic">
+                {block.props.caption}
+              </figcaption>
+            )}
+          </figure>
+        )
+
+      case 'embed':
+        if (!block.content) return null
+        const embedId = extractEmbedId(block.content, block.props?.embedType || 'youtube')
+        return (
+          <figure 
+            key={block.id || index} 
+            className={`my-6 ${getImageSizeClass(block.props?.size)} ${getImageAlignmentClass(block.props?.alignment)}`}
+          >
+            <div 
+              className="rounded-lg overflow-hidden bg-gray-900"
+              style={{ aspectRatio: block.props?.aspectRatio?.replace(':', '/') || '16/9' }}
+            >
+              {block.props?.embedType === 'youtube' && (
+                <iframe
+                  src={`https://www.youtube.com/embed/${embedId}`}
+                  className="w-full h-full"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              )}
+              {block.props?.embedType === 'vimeo' && (
+                <iframe
+                  src={`https://player.vimeo.com/video/${embedId}`}
+                  className="w-full h-full"
+                  allowFullScreen
+                  allow="autoplay; fullscreen; picture-in-picture"
+                />
+              )}
+              {(block.props?.embedType === 'custom' || !block.props?.embedType) && (
+                <iframe
+                  src={block.content}
+                  className="w-full h-full"
+                  allowFullScreen
+                />
+              )}
+            </div>
+            {block.props?.caption && (
+              <figcaption className="text-center text-sm text-primary/60 mt-2 italic">
+                {block.props.caption}
+              </figcaption>
+            )}
+          </figure>
         )
 
       default:

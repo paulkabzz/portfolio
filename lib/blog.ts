@@ -14,15 +14,20 @@ export const DEFAULT_FONTS = [
 // Content block types for rich blog editing
 export interface BlogContentBlock {
   id: string;
-  type: 'paragraph' | 'heading' | 'image' | 'code' | 'quote';
+  type: 'paragraph' | 'heading' | 'image' | 'code' | 'quote' | 'video' | 'embed';
   content: string;
   props?: {
     level?: 1 | 2 | 3;  // For headings
-    size?: 'small' | 'medium' | 'large' | 'full';  // For images
+    size?: 'small' | 'medium' | 'large' | 'full';  // For images/videos
     alignment?: 'left' | 'center' | 'right';
     caption?: string;
     language?: string;  // For code blocks
     fontFamily?: string;  // Custom font for text blocks
+    // Video specific
+    aspectRatio?: '16:9' | '4:3' | '1:1';  // For videos/embeds
+    autoplay?: boolean;
+    // Embed specific
+    embedType?: 'youtube' | 'vimeo' | 'twitter' | 'custom';
   };
 }
 

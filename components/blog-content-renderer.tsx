@@ -157,7 +157,6 @@ export function BlogContentRenderer({ content, customFonts = [], className = '' 
               src={block.content}
               controls
               className="w-full rounded-lg"
-              style={{ aspectRatio: block.props?.aspectRatio?.replace(':', '/') || '16/9' }}
             />
             {block.props?.caption && (
               <figcaption className="text-center text-sm text-primary/60 mt-2 italic">
@@ -232,7 +231,7 @@ export function BlogContentRenderer({ content, customFonts = [], className = '' 
             className={`grid grid-cols-1 ${colsClass} ${gapClass} ${alignClass} my-6`}
           >
             {(block.children || []).map((columnBlocks, colIndex) => (
-              <div key={colIndex}>
+              <div key={colIndex} className="[&_img]:h-[400px] [&_img]:w-full [&_img]:object-cover [&_video]:h-[400px] [&_video]:w-full [&_video]:object-cover">
                 {columnBlocks.map((childBlock, childIndex) => 
                   renderBlock(childBlock, childIndex)
                 )}

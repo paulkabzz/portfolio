@@ -125,19 +125,23 @@ export function BlogContentEditor({ content, onChange, customFonts = [], disable
   }
 
   const handleImageUpload = async (blockId: string, file: File) => {
-    if (!file.type.startsWith('image/')) {
+    const isImage = file.type.startsWith('image/')
+    const isVideo = file.type.startsWith('video/') || file.name.toLowerCase().endsWith('.mov')
+    
+    if (!isImage && !isVideo) {
       toast({
         title: "Invalid file type",
-        description: "Please select an image file",
+        description: "Please select an image or video file",
         variant: "destructive",
       })
       return
     }
 
-    if (file.size > 10 * 1024 * 1024) {
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024 // 50MB for video, 10MB for image
+    if (file.size > maxSize) {
       toast({
         title: "File too large",
-        description: "Please select an image smaller than 10MB",
+        description: isVideo ? "Please select a video smaller than 50MB" : "Please select an image smaller than 10MB",
         variant: "destructive",
       })
       return
@@ -148,8 +152,8 @@ export function BlogContentEditor({ content, onChange, customFonts = [], disable
       const imageUrl = await uploadBlogImage(file)
       updateBlock(blockId, { content: imageUrl })
       toast({
-        title: "Image uploaded",
-        description: "Your image has been uploaded successfully",
+        title: isVideo ? "Video uploaded" : "Image uploaded",
+        description: `Your ${isVideo ? 'video' : 'image'} has been uploaded successfully`,
       })
     } catch (error) {
       console.error('Error uploading image:', error)
@@ -501,7 +505,7 @@ export function BlogContentEditor({ content, onChange, customFonts = [], disable
                         <Input
                           id={`video-${block.id}`}
                           type="file"
-                          accept="video/*"
+                          accept="video/*,.mov"
                           onChange={(e) => {
                             const file = e.target.files?.[0]
                             if (file) handleImageUpload(block.id, file)
@@ -747,38 +751,258 @@ export function BlogContentEditor({ content, onChange, customFonts = [], disable
               {/* Column Content Editors */}
               <div className={`grid gap-4 ${block.props?.columnCount === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 {(block.children || [[], []]).map((columnBlocks, colIndex) => (
-                  <div key={colIndex} className="border border-secondary/50 rounded-lg p-3 bg-secondary/10">
-                    <div className="text-xs font-medium text-primary/60 mb-2">Column {colIndex + 1}</div>
-                    <Textarea
-                      value={columnBlocks[0]?.content || ''}
-                      onChange={(e) => {
-                        const newChildren = [...(block.children || [[], []])]
-                        if (!newChildren[colIndex]) newChildren[colIndex] = []
-                        if (newChildren[colIndex].length === 0) {
-                          newChildren[colIndex] = [{
-                            id: generateBlockId(),
-                            type: 'paragraph',
-                            content: e.target.value,
-                          }]
-                        } else {
-                          newChildren[colIndex][0] = { ...newChildren[colIndex][0], content: e.target.value }
-                        }
-                        onChange(content.map(b => 
-                          b.id === block.id ? { ...b, children: newChildren } : b
-                        ))
-                      }}
-                      placeholder={`Column ${colIndex + 1} content...
+                  <div key={colIndex} className="border border-secondary/50 rounded-lg p-3 bg-secondary/10 space-y-3">
+                    <div className="text-xs font-medium text-primary/60">Column {colIndex + 1}</div>
+                    
+                    {/* Render existing blocks in this column */}
+                    {columnBlocks.map((childBlock, childIndex) => (
+                      <div key={childBlock.id} className="relative group">
+                        {childBlock.type === 'paragraph' && (
+                          <div className="relative">
+                            <Textarea
+                              value={childBlock.content}
+                              onChange={(e) => {
+                                const newChildren = [...(block.children || [[], []])]
+                                newChildren[colIndex][childIndex] = { ...childBlock, content: e.target.value }
+                                onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                              }}
+                              placeholder="Text... (**bold** ~italic~ {{green}})"
+                              rows={3}
+                              className="border-secondary focus:border-green resize-none text-sm pr-8"
+                              disabled={disabled}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const newChildren = [...(block.children || [[], []])]
+                                newChildren[colIndex] = newChildren[colIndex].filter((_, i) => i !== childIndex)
+                                onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                              }}
+                              className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                              disabled={disabled}
+                            >
+                              <X className="h-3 w-3 text-red-500" />
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {childBlock.type === 'image' && (
+                          <div className="relative">
+                            {childBlock.content ? (
+                              <div className="relative">
+                                <img src={childBlock.content} alt="" className="w-full h-32 object-cover rounded" />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newChildren = [...(block.children || [[], []])]
+                                    newChildren[colIndex] = newChildren[colIndex].filter((_, i) => i !== childIndex)
+                                    onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                                  }}
+                                  className="absolute top-1 right-1 h-6 w-6 p-0 bg-white/80"
+                                  disabled={disabled}
+                                >
+                                  <X className="h-3 w-3 text-red-500" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="border-2 border-dashed border-secondary rounded p-4 text-center">
+                                <Label htmlFor={`col-img-${block.id}-${colIndex}-${childIndex}`} className="cursor-pointer">
+                                  <ImageIcon className="h-6 w-6 text-primary/30 mx-auto mb-1" />
+                                  <span className="text-xs text-primary/60">Upload image</span>
+                                  <Input
+                                    id={`col-img-${block.id}-${colIndex}-${childIndex}`}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    disabled={disabled}
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0]
+                                      if (file) {
+                                        try {
+                                          const url = await uploadBlogImage(file)
+                                          const newChildren = [...(block.children || [[], []])]
+                                          newChildren[colIndex][childIndex] = { ...childBlock, content: url }
+                                          onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                                        } catch (error) {
+                                          toast({ title: "Upload failed", variant: "destructive" })
+                                        }
+                                      }
+                                    }}
+                                  />
+                                </Label>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
-Use formatting:
-**bold** ~italic~ {{green}}`}
-                      rows={6}
-                      className="border-secondary focus:border-green resize-none text-sm"
-                      disabled={disabled}
-                    />
+                        {childBlock.type === 'video' && (
+                          <div className="relative">
+                            {childBlock.content ? (
+                              <div className="relative">
+                                <video src={childBlock.content} controls className="w-full h-32 rounded bg-gray-900" />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newChildren = [...(block.children || [[], []])]
+                                    newChildren[colIndex] = newChildren[colIndex].filter((_, i) => i !== childIndex)
+                                    onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                                  }}
+                                  className="absolute top-1 right-1 h-6 w-6 p-0 bg-white/80"
+                                  disabled={disabled}
+                                >
+                                  <X className="h-3 w-3 text-red-500" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="border-2 border-dashed border-secondary rounded p-4 text-center">
+                                <Label htmlFor={`col-vid-${block.id}-${colIndex}-${childIndex}`} className="cursor-pointer">
+                                  <Video className="h-6 w-6 text-primary/30 mx-auto mb-1" />
+                                  <span className="text-xs text-primary/60">Upload video</span>
+                                  <Input
+                                    id={`col-vid-${block.id}-${colIndex}-${childIndex}`}
+                                    type="file"
+                                    accept="video/*,.mov"
+                                    className="hidden"
+                                    disabled={disabled}
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0]
+                                      if (file) {
+                                        try {
+                                          const url = await uploadBlogImage(file)
+                                          const newChildren = [...(block.children || [[], []])]
+                                          newChildren[colIndex][childIndex] = { ...childBlock, content: url }
+                                          onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                                        } catch (error) {
+                                          toast({ title: "Upload failed", variant: "destructive" })
+                                        }
+                                      }
+                                    }}
+                                  />
+                                </Label>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {childBlock.type === 'embed' && (
+                          <div className="relative space-y-2">
+                            <div className="flex items-center gap-1">
+                              <Input
+                                value={childBlock.content}
+                                onChange={(e) => {
+                                  const newChildren = [...(block.children || [[], []])]
+                                  newChildren[colIndex][childIndex] = { ...childBlock, content: e.target.value }
+                                  onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                                }}
+                                placeholder="YouTube URL..."
+                                className="border-secondary focus:border-green text-xs h-8"
+                                disabled={disabled}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const newChildren = [...(block.children || [[], []])]
+                                  newChildren[colIndex] = newChildren[colIndex].filter((_, i) => i !== childIndex)
+                                  onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                                }}
+                                className="h-8 w-8 p-0 shrink-0"
+                                disabled={disabled}
+                              >
+                                <X className="h-3 w-3 text-red-500" />
+                              </Button>
+                            </div>
+                            {childBlock.content && (
+                              <div className="aspect-video rounded overflow-hidden bg-gray-900">
+                                <iframe
+                                  src={`https://www.youtube.com/embed/${extractYouTubeId(childBlock.content)}`}
+                                  className="w-full h-full"
+                                  allowFullScreen
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {/* Add content buttons for this column */}
+                    <div className="flex flex-wrap gap-1.5 pt-2 mt-2 border-t border-secondary/50">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newChildren = [...(block.children || [[], []])]
+                          if (!newChildren[colIndex]) newChildren[colIndex] = []
+                          newChildren[colIndex].push({ id: generateBlockId(), type: 'paragraph', content: '' })
+                          onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                        }}
+                        disabled={disabled}
+                        className="h-7 px-2 text-xs border-secondary"
+                      >
+                        <Type className="h-3 w-3 mr-1" />
+                        Text
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newChildren = [...(block.children || [[], []])]
+                          if (!newChildren[colIndex]) newChildren[colIndex] = []
+                          newChildren[colIndex].push({ id: generateBlockId(), type: 'image', content: '' })
+                          onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                        }}
+                        disabled={disabled}
+                        className="h-7 px-2 text-xs border-secondary"
+                      >
+                        <ImageIcon className="h-3 w-3 mr-1" />
+                        Image
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newChildren = [...(block.children || [[], []])]
+                          if (!newChildren[colIndex]) newChildren[colIndex] = []
+                          newChildren[colIndex].push({ id: generateBlockId(), type: 'video', content: '', props: { aspectRatio: '16:9' } })
+                          onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                        }}
+                        disabled={disabled}
+                        className="h-7 px-2 text-xs border-secondary"
+                      >
+                        <Video className="h-3 w-3 mr-1" />
+                        Video
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newChildren = [...(block.children || [[], []])]
+                          if (!newChildren[colIndex]) newChildren[colIndex] = []
+                          newChildren[colIndex].push({ id: generateBlockId(), type: 'embed', content: '', props: { embedType: 'youtube', aspectRatio: '16:9' } })
+                          onChange(content.map(b => b.id === block.id ? { ...b, children: newChildren } : b))
+                        }}
+                        disabled={disabled}
+                        className="h-7 px-2 text-xs border-secondary"
+                      >
+                        <Play className="h-3 w-3 mr-1" />
+                        Embed
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-primary/50">Tip: Each column supports text formatting. For images, use separate Image blocks above or below.</p>
             </div>
           )}
         </CardContent>

@@ -3,6 +3,8 @@
 import React from 'react'
 import { BlogContentBlock, CustomFont } from '@/lib/blog'
 import { parseTextWithFormatting } from '@/components/utils'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 
 // Helper to extract embed ID from various URL formats
 const extractEmbedId = (url: string, embedType: string): string => {
@@ -239,6 +241,28 @@ export function BlogContentRenderer({ content, customFonts = [], className = '' 
             ))}
           </div>
         )
+
+      case 'math':
+        if (!block.content) return null
+        try {
+          const html = katex.renderToString(block.content, {
+            displayMode: block.props?.displayMode ?? true,
+            throwOnError: false,
+          })
+          return (
+            <div 
+              key={block.id || index}
+              className={`my-4 ${block.props?.displayMode ? 'text-center overflow-x-auto' : 'inline'}`}
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          )
+        } catch (e) {
+          return (
+            <div key={block.id || index} className="my-4 text-red-500 text-sm">
+              LaTeX Error: {(e as Error).message}
+            </div>
+          )
+        }
 
       default:
         return null

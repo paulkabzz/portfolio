@@ -32,9 +32,12 @@ import {
   Play,
   Link as LinkIcon,
   Columns,
+  Sigma,
 } from 'lucide-react'
 import { BlogContentBlock, uploadBlogImage, CustomFont, DEFAULT_FONTS } from '@/lib/blog'
 import { useToast } from '@/hooks/use-toast'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 
 interface BlogContentEditorProps {
   content: BlogContentBlock[]
@@ -88,6 +91,8 @@ export function BlogContentEditor({ content, onChange, customFonts = [], disable
     } else if (type === 'columns') {
       newBlock.props = { columnCount: 2, columnGap: 'medium', verticalAlign: 'top', ...props }
       newBlock.children = [[], []]  // Start with 2 empty columns
+    } else if (type === 'math') {
+      newBlock.props = { displayMode: true, ...props }  // Block equation by default
     }
 
     onChange([...content, newBlock])
@@ -1005,6 +1010,71 @@ export function BlogContentEditor({ content, onChange, customFonts = [], disable
               </div>
             </div>
           )}
+
+          {block.type === 'math' && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <Label className="text-sm text-primary/70">Display Mode:</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={block.props?.displayMode ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => updateBlockProps(block.id, { displayMode: true })}
+                    disabled={disabled}
+                    className="h-7 text-xs"
+                  >
+                    Block (centered)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={!block.props?.displayMode ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => updateBlockProps(block.id, { displayMode: false })}
+                    disabled={disabled}
+                    className="h-7 text-xs"
+                  >
+                    Inline
+                  </Button>
+                </div>
+              </div>
+              
+              <Textarea
+                value={block.content}
+                onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                placeholder="Enter LaTeX... e.g. \frac{1}{2} or \sum_{i=1}^{n} x_i"
+                rows={3}
+                className="font-mono text-sm border-secondary focus:border-green"
+                disabled={disabled}
+              />
+              
+              {/* Live Preview */}
+              {block.content && (
+                <div className="p-4 bg-secondary/30 rounded-lg">
+                  <Label className="text-xs text-primary/50 mb-2 block">Preview:</Label>
+                  <div 
+                    className={block.props?.displayMode ? "text-center" : ""}
+                    dangerouslySetInnerHTML={{
+                      __html: (() => {
+                        try {
+                          return katex.renderToString(block.content, {
+                            displayMode: block.props?.displayMode ?? true,
+                            throwOnError: false,
+                          })
+                        } catch (e) {
+                          return `<span class="text-red-500 text-sm">Invalid LaTeX: ${(e as Error).message}</span>`
+                        }
+                      })()
+                    }}
+                  />
+                </div>
+              )}
+              
+              <p className="text-xs text-primary/50">
+                Common: \frac{'{a}'}{'{b}'}, \sqrt{'{x}'}, x^2, x_i, \sum, \int, \alpha, \beta, \gamma
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     )
@@ -1105,6 +1175,17 @@ export function BlogContentEditor({ content, onChange, customFonts = [], disable
         >
           <Columns className="h-4 w-4 mr-1" />
           Columns
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => addBlock('math')}
+          disabled={disabled}
+          className="border-secondary bg-transparent"
+        >
+          <Sigma className="h-4 w-4 mr-1" />
+          Math
         </Button>
       </div>
     </div>

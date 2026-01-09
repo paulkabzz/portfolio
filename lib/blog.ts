@@ -14,7 +14,7 @@ export const DEFAULT_FONTS = [
 // Content block types for rich blog editing
 export interface BlogContentBlock {
   id: string;
-  type: 'paragraph' | 'heading' | 'image' | 'code' | 'quote' | 'video' | 'embed' | 'columns';
+  type: 'paragraph' | 'heading' | 'image' | 'code' | 'quote' | 'video' | 'embed' | 'columns' | 'math';
   content: string;
   props?: {
     level?: 1 | 2 | 3;  // For headings
@@ -32,6 +32,8 @@ export interface BlogContentBlock {
     columnCount?: 2 | 3;  // Number of columns
     columnGap?: 'small' | 'medium' | 'large';  // Gap between columns
     verticalAlign?: 'top' | 'center' | 'bottom';  // Vertical alignment
+    // Math/LaTeX specific
+    displayMode?: boolean;  // true = block equation, false = inline
   };
   // For columns block - contains child blocks for each column
   children?: BlogContentBlock[][];

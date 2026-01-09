@@ -162,9 +162,12 @@
   }
 }
 
-* {
-  font-family: "Inter", sans-serif, monospace;
+html {
   scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Inter", sans-serif;
 }
 
 /* * {

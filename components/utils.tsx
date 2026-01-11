@@ -1,14 +1,29 @@
 import Link from "next/link";
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 
 export const parseTextWithFormatting = (text: string) => {
     // Recursive function to handle nested formatting
     const parseRecursive = (input: string): React.ReactNode[] => {
-        // Split by all formatting markers: **, {{, }}, ~, and links
-        const parts = input.split(/(\*\*[^*]*\*\*|\{\{[^}]*\}\}|~[^~]*~|\[\["[^"]*":\s*[^\]]*\]\])/);
+        // Split by all formatting markers: **, {{, }}, ~, links, and inline math $...$
+        const parts = input.split(/(\*\*[^*]*\*\*|\{\{[^\}]*\}\}|~[^~]*~|\[\["[^"]*":\s*[^\]]*\]\]|\$[^$]+\$)/);
         
         return parts.map((part, index) => {
+            // Check for inline math $...$
+            if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
+                const latex = part.slice(1, -1);
+                try {
+                    const html = katex.renderToString(latex, {
+                        displayMode: false,
+                        throwOnError: false,
+                    });
+                    return <span key={index} dangerouslySetInnerHTML={{ __html: html }} />;
+                } catch (e) {
+                    return <span key={index} className="text-red-500">{latex}</span>;
+                }
+            }
             // Check for bold text **text**
-            if (part.startsWith('**') && part.endsWith('**')) {
+            else if (part.startsWith('**') && part.endsWith('**')) {
                 const content = part.slice(2, -2);
                 return <b key={index}>{parseRecursive(content)}</b>;
             }
